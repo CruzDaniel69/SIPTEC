@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIPTEC</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="../styles/styles.css">
+</head>
+<body>
+
+  <main id="appShell" class="app-shell">
+    <aside class="sidebar">
+      <div class="brand-mark small"><img src="../img/LogoRical.png" alt="logo" class="img-fluid rounded-circle"></div>
+      <button class="nav-item active" data-view="loadDashboard" title="Panel">
+        <img src="../img/iconoHome.png" alt=""><span>Panel de control</span>
+      </button>
+      <button class="nav-item" data-view="inventory" title="Inventario">
+        <img src="../img/iconInventario.png" alt=""><span>Inventario</span>
+      </button>
+      <button class="nav-item" data-view="loans" title="Préstamos">
+        <img src="../img/iconPrestamo.png" alt=""><span>Préstamos</span>
+      </button>
+      <button class="nav-item" data-view="users" title="Usuarios">
+        <img src="../img/iconUsuario.png" alt=""><span>Usuarios</span>
+      </button>
+      <button class="nav-item" data-view="reports" title="Reportes">
+        <img src="../img/iconReporte.png" alt=""><span>Reportes</span>
+      </button>
+      <button class="nav-item" data-view="settings" title="Configuracion">
+        <img src="../img/iconConfiguraciones.png" alt=""><span>Configuracion</span>
+      </button>
+    </aside>
+
+    <section class="content-area">
+      <header class="topbar">
+        <div class="search-box">
+          <i class="bi bi-search"></i>
+          <input id="globalSearch" type="search" placeholder="Busca herramienta, usuario, Código...">
+        </div>
+        <button id="refreshBtn" class="icon-btn" type="button" title="Actualizar"><i class="bi bi-arrow-clockwise"></i></button>
+        <div class="date-chip"><i class="bi bi-calendar3"></i><span id="dateText"></span></div>
+        <div class="user-chip"><i class="bi bi-person-circle"></i><span>Administrador</span></div>
+        <button id="logoutBtn" class="icon-btn logout-btn" type="button" title="Cerrar cuenta" aria-label="Cerrar cuenta">
+          <i class="bi bi-box-arrow-right"></i>
+        </button>
+      </header>
+
+      <section id="viewRoot" class="view-root"></section>
+    </section>
+  </main>
+
+  <div class="modal fade" id="itemModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <form id="itemForm" class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Registrar herramienta</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body row g-3">
+          <div class="col-6">
+            <label class="form-label" for="itemCode">Código</label>
+            <input id="itemCode" class="form-control" required>
+          </div>
+          <div class="col-6">
+            <label class="form-label" for="itemCategory">Categoría</label>
+            <select id="itemCategory" class="form-select">
+              <option>Material de apoyo</option>
+              <option>Equipo técnico</option>
+              <option>Equipo de medición</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="itemName">Nombre</label>
+            <input id="itemName" class="form-control" required>
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="itemLocation">Ubicación</label>
+            <input id="itemLocation" class="form-control" value="Bodega técnica" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light btnCancelar" data-bs-dismiss="modal">Cancelar</button>
+          <button class="btn btn-success" type="submit">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal fade" id="itemEditModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <form id="itemEditForm" class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Editar inventario</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body row g-3">
+          <input id="editItemId" type="hidden">
+          <div class="col-md-6">
+            <label class="form-label" for="editItemCode">Código</label>
+            <input id="editItemCode" class="form-control" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="editItemStatus">Estado</label>
+            <select id="editItemStatus" class="form-select">
+              <option value="Disponible">Disponible</option>
+              <option value="Prestado">Prestado</option>
+              <option value="Daniado">Dañado</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="editItemName">Nombre</label>
+            <input id="editItemName" class="form-control" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="editItemCategory">Categoría</label>
+            <select id="editItemCategory" class="form-select">
+              <option>Material de apoyo</option>
+              <option>Equipo técnico</option>
+              <option>Equipo de medición</option>
+              <option>Electrónico</option>
+              <option>Mecánico</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="editItemLocation">Area / Ubicación</label>
+            <input id="editItemLocation" class="form-control" required>
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="editItemAcquiredAt">Fecha de adquisición</label>
+            <input id="editItemAcquiredAt" class="form-control" type="date">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light btnCancelar" data-bs-dismiss="modal">Cancelar</button>
+          <button class="btn btn-success" type="submit">Guardar cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <form id="userForm" class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Crear usuario</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body row g-3">
+          <div class="col-md-6">
+            <label class="form-label" for="userFirstName">Nombre</label>
+            <input id="userFirstName" class="form-control" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="userLastName">Apellido</label>
+            <input id="userLastName" class="form-control" required>
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="userEmail">Correo electrónico</label>
+            <input id="userEmail" class="form-control" type="email" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="userRole">Rol</label>
+            <select id="userRole" class="form-select">
+              <option value="EMPLEADO">EMPLEADO</option>
+              <option value="ADMINISTRADOR">ADMINISTRADOR</option>
+              <option value="IT">IT</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="userInstitution">Institución</label>
+            <select id="userInstitution" class="form-select">
+              <option value="ITR">ITR</option>
+              <option value="CFP">CFP</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="userPassword">Contraseña</label>
+            <input id="userPassword" class="form-control" type="password" minlength="4" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light btnCancelar" data-bs-dismiss="modal">Cancelar</button>
+          <button class="btn btn-success" type="submit">Guardar usuario</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal fade" id="userEditModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <form id="userEditForm" class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Editar usuario</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body row g-3">
+          <input id="editUserId" type="hidden">
+          <div class="col-md-6">
+            <label class="form-label" for="editUserFirstName">Nombre</label>
+            <input id="editUserFirstName" class="form-control" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="editUserLastName">Apellido</label>
+            <input id="editUserLastName" class="form-control" required>
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="editUserEmail">Correo electrónico</label>
+            <input id="editUserEmail" class="form-control" type="email" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="editUserRole">Rol</label>
+            <select id="editUserRole" class="form-select">
+              <option value="EMPLEADO">EMPLEADO</option>
+              <option value="ADMINISTRADOR">ADMINISTRADOR</option>
+              <option value="IT">IT</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="editUserInstitution">Institución</label>
+            <select id="editUserInstitution" class="form-select">
+              <option value="ITR">ITR</option>
+              <option value="CFP">CFP</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="editUserPassword">Nueva Contraseña</label>
+            <input id="editUserPassword" class="form-control" type="password" minlength="4" placeholder="Dejar vacío para conservarla">
+          </div>
+          <div class="col-12">
+            <div class="form-check form-switch">
+              <input id="editUserActive" class="form-check-input" type="checkbox" role="switch">
+              <label class="form-check-label" for="editUserActive">Usuario activo</label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light btnCancelar" data-bs-dismiss="modal">Cancelar</button>
+          <button class="btn btn-success" type="submit">Guardar cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal fade" id="damageReportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <form id="damageReportForm" class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Reportar daño</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <input id="damageReturnId" type="hidden">
+          <p id="damageItemSummary" class="muted mb-3"></p>
+          <label class="form-label" for="damageDescription">Daños presentados</label>
+          <textarea id="damageDescription" class="form-control" rows="5" required placeholder="Describe golpes, piezas faltantes, fallas eléctricas, rayones u otros daños..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+          <button class="btn btn-warning" type="submit">Enviar reporte</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal fade" id="reportViewerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 id="reportViewerTitle" class="modal-title">Reporte</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <pre id="reportViewerContent" class="report-preview"></pre>
+        </div>
+        <div class="modal-footer">
+          <button id="copyReportBtn" class="btn btn-outline-primary" type="button"><i class="bi bi-clipboard"></i> Copiar</button>
+          <div class="dropdown">
+            <button id="downloadViewedReportBtn" class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-download"></i> Exportar
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><button class="dropdown-item" type="button" data-export-viewed="txt">TXT</button></li>
+              <li><button class="dropdown-item" type="button" data-export-viewed="pdf">PDF</button></li>
+              <li><button class="dropdown-item" type="button" data-export-viewed="csv">CSV</button></li>
+              <li><button class="dropdown-item" type="button" data-export-viewed="excel">Excel</button></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+  <script src="../js/app.js"></script>
+</body>
+</html>

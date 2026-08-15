@@ -1,0 +1,52 @@
+<div class="page-header">
+  <h1>Inventario</h1>
+  <div class="header-actions">
+    <div class="dropdown">
+      <button class="btn-pill btn-outline dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-funnel"></i> Todo
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><button class="dropdown-item" type="button" data-filter="todo">Todo</button></li>
+        <li><button class="dropdown-item" type="button" data-filter="disponible">Disponible</button></li>
+        <li><button class="dropdown-item" type="button" data-filter="prestado">Prestado</button></li>
+        <li><button class="dropdown-item" type="button" data-filter="daniado">Dañado</button></li>
+      </ul>
+    </div>
+    <button type="button" class="btn-pill btn-solid-green" data-bs-toggle="modal" data-bs-target="#itemModal">
+      <i class="bi bi-plus-lg"></i> Agregar producto
+    </button>
+  </div>
+</div>
+
+<div class="table-card">
+  <table>  <!-- En esta Tabla iran las inserciones para el javascript-->
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Nombre</th>
+        <th>Categoría</th>
+        <th>Área</th>
+        <th>Adquisición</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><!-- Y justo aqui se insertaran -->
+        <td class="code-tag">CAA-120</td>
+        <td class="item-name"><span class="item-icon"><i class="bi bi-tools"></i></span>Cautin</td>
+        <td>Material de apoyo</td>
+        <td>Bodega técnica</td>
+        <td>2026-05-12</td>
+        <td><span class="status prestado">Prestado</span></td>
+        <td>
+          <div class="row-actions">
+            <button title="Editar" data-bs-toggle="modal" data-bs-target="#itemEditModal"><img src="../img/icons8-pencil-24.png" alt="Editar" class="row-icon"></button>
+            <button title="Cambiar estado"><i class="bi bi-arrow-repeat"></i></button>
+            <button class="danger" title="Eliminar"><img src="../img/icons8-trash-24.png" alt="Eliminar" class="row-icon"></button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

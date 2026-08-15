@@ -1,0 +1,105 @@
+<div class="page-header">
+  <h1>Préstamos</h1>
+</div>
+
+<div class="tabs-css">
+  <input type="radio" name="loanTabs" id="tabPrestamos" checked>
+  <input type="radio" name="loanTabs" id="tabDevoluciones">
+  <input type="radio" name="loanTabs" id="tabHistorial">
+
+  <div class="segmented-tabs">
+    <label for="tabPrestamos">Préstamos</label>
+    <label for="tabDevoluciones">Devoluciones</label>
+    <label for="tabHistorial">Historial</label>
+  </div>
+
+  <div class="tab-panel panel-prestamos">
+    <div class="loan-layout">
+      <div class="table-card">
+        <table>  <!-- En esta Tabla iran las inserciones para el javascript-->
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Nombre de usuario</th>
+              <th>Fecha inicio</th>
+              <th>Producto</th>
+              <th>Estado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><!-- Y justo aqui se insertaran -->
+              <td class="code-tag">PR-001</td>
+              <td>Admin Principal</td>
+              <td>2026-06-13</td>
+              <td>Cautin</td>
+              <td><span class="status active">Aprobado</span></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="action-panel">
+        <h3>Préstamo PR-002</h3> <!-- Aqui me imagino que tambien irian inserciones de JavaScript-->
+        <span class="status pending">Pendiente</span>
+        <span class="field-label">Descripción</span>
+        <div class="desc-box">Soporte IT solicita Martillo.</div>
+        <span class="field-label">Estado del material</span>
+        <p style="margin:0 0 16px; font-weight:600;">Pendiente</p>
+        <div class="quick-actions">
+          <button type="button" class="qa-btn qa-green"><i class="bi bi-check-lg"></i> Aprobar préstamo</button>
+          <button type="button" class="qa-btn qa-red"><i class="bi bi-x-lg"></i> Rechazar préstamo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-panel panel-devoluciones">
+    <div class="return-grid">
+      <div class="devolucion-card"><!-- En estas Cards tambien irian-->
+        <div class="top-row">
+          <span class="status pending">Retrasado</span>
+          <span class="code-tag">CAA-120</span>
+        </div>
+        <h4>Admin Principal</h4>
+        <div class="tool-line"><i class="bi bi-box-seam"></i>Cautín</div>
+        <div class="card-actions">
+          <button type="button" class="btn-pill btn-solid-green"><i class="bi bi-check-lg"></i>Devuelto</button>
+          <button type="button" class="btn-pill btn-solid-orange" data-bs-toggle="modal" data-bs-target="#damageReportModal"><i class="bi bi-exclamation-triangle"></i>Reportar daño</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-panel panel-historial">
+    <div class="toolbar">
+      <span></span>
+      <button type="button" class="btn-pill btn-solid-green"><i class="bi bi-download"></i>Exportar</button>
+    </div>
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Herramienta</th>
+            <th>Inicio</th>
+            <th>Entrega</th>
+            <th>Usuario</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="code-tag">EQP-065</td>
+            <td class="item-name"><span class="item-icon"><i class="bi bi-speaker"></i></span>Equipo de sonido</td>
+            <td>2026-06-13</td>
+            <td>2026-07-17</td>
+            <td>Admin Principal</td>
+            <td><span class="status devuelto">Devuelto</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
