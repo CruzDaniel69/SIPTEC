@@ -485,9 +485,9 @@ body {
 .qa-btn:hover { filter: brightness(1.06); }
 .qa-btn:active { transform: scale(.98); }
 
-.qa-blue { background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,0) 55%), rgba(25, 141, 230, .96); }
-.qa-green { background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,0) 55%), rgba(40, 167, 69, .96); }
-.qa-purple { background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,0) 55%), rgba(138, 79, 214, .96); }
+.qa-blue { background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,0) 55%), rgba(52, 155, 234, 0.96); }
+.qa-green { background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,0) 55%), rgba(59, 211, 95, 0.96); }
+.qa-purple { background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,0) 55%), rgba(127, 59, 216, 0.96); }
 .qa-gray { background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,0) 55%), rgba(154, 167, 180, .96); }
 .qa-red { background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,0) 55%), rgba(220, 53, 69, .96); }
 .qa-orange { background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,0) 55%), rgba(246, 166, 35, .96); }

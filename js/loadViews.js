@@ -57,8 +57,6 @@ document.addEventListener('DOMContentLoaded', () => {
   async function loadView(viewName, subtabId) {
     if (!viewRoot) return;
     try {
-      // OJO: esta ruta es relativa a dashboard.html, que vive DENTRO de pages/.
-      // Por eso NO se le pone "pages/" al inicio (si no, buscaría pages/pages/...).
       const response = await fetch(`${viewName}.html`);
 
       if (!response.ok) {
