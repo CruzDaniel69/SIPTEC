@@ -13,22 +13,22 @@
   <main id="appShell" class="app-shell">
     <aside class="sidebar">
       <div class="brand-mark small"><img src="../img/LogoRical.png" alt="logo" class="img-fluid rounded-circle"></div>
-      <button class="nav-item active" data-view="loadDashboard" title="Panel">
+      <button class="nav-item active" data-view="loadDashboard" title="Panel" data-roles="ADMINISTRADOR">
         <img src="../img/iconoHome.png" alt=""><span>Panel de control</span>
       </button>
-      <button class="nav-item" data-view="inventory" title="Inventario">
-        <img src="../img/iconInventario.png" alt=""><span>Inventario</span>
+      <button class="nav-item" data-view="inventory" title="Herramientas" data-roles="ADMINISTRADOR,EMPLEADO,IT">
+        <img src="../img/iconInventario.png" alt=""><span>Herramientas</span>
       </button>
-      <button class="nav-item" data-view="loans" title="Préstamos">
+      <button class="nav-item" data-view="loans" title="Préstamos" data-roles="ADMINISTRADOR,EMPLEADO">
         <img src="../img/iconPrestamo.png" alt=""><span>Préstamos</span>
       </button>
-      <button class="nav-item" data-view="users" title="Usuarios">
+      <button class="nav-item" data-view="users" title="Usuarios" data-roles="ADMINISTRADOR">
         <img src="../img/iconUsuario.png" alt=""><span>Usuarios</span>
       </button>
-      <button class="nav-item" data-view="reports" title="Reportes">
+      <button class="nav-item" data-view="reports" title="Reportes" data-roles="ADMINISTRADOR,EMPLEADO,IT">
         <img src="../img/iconReporte.png" alt=""><span>Reportes</span>
       </button>
-      <button class="nav-item" data-view="settings" title="Configuracion">
+      <button class="nav-item" data-view="settings" title="Configuracion" data-roles="ADMINISTRADOR,EMPLEADO,IT">
         <img src="../img/iconConfiguraciones.png" alt=""><span>Configuracion</span>
       </button>
     </aside>
@@ -81,7 +81,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-light btnCancelar" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
           <button class="btn btn-success" type="submit">Guardar</button>
         </div>
       </form>
@@ -133,7 +133,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-light btnCancelar" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
           <button class="btn btn-success" type="submit">Guardar cambios</button>
         </div>
       </form>
@@ -181,7 +181,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-light btnCancelar" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
           <button class="btn btn-success" type="submit">Guardar usuario</button>
         </div>
       </form>
@@ -236,7 +236,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-light btnCancelar" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
           <button class="btn btn-success" type="submit">Guardar cambios</button>
         </div>
       </form>

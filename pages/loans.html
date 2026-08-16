@@ -9,7 +9,11 @@
 
   <div class="segmented-tabs">
     <label for="tabPrestamos">Préstamos</label>
-    <label for="tabDevoluciones">Devoluciones</label>
+    <!-- TODO: Franklin confirmó que Devoluciones también la debe ver el Empleado
+         encargado de gestionar préstamos, no solo el Administrador. Eso depende de
+         un dato por usuario en la DB (ej. un flag "gestionaPrestamos"), no solo del
+         rol general. Por ahora solo Admin la ve; se ampliará cuando la DB esté lista. -->
+    <label for="tabDevoluciones" data-roles="ADMINISTRADOR">Devoluciones</label>
     <label for="tabHistorial">Historial</label>
   </div>
 

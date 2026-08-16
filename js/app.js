@@ -6,6 +6,26 @@ document.addEventListener('DOMContentLoaded', () => {
   const navItems = document.querySelectorAll('.nav-item');
   const appShell = document.getElementById('appShell');
 
+  // ---------- Roles ----------
+  // Por ahora el rol se lee de localStorage para poder probarlo fácilmente.
+  // Cuando el login real esté conectado, reemplaza esta línea por lo que
+  // devuelva tu backend/sesión (ej. el rol del usuario autenticado).
+  // Para probar otro rol en la consola: localStorage.setItem('siptec-role', 'EMPLEADO')
+  const ROLE = (localStorage.getItem('siptec-role') || 'ADMINISTRADOR').toUpperCase();
+  document.body.dataset.role = ROLE;
+
+  // Oculta cualquier elemento con data-roles="ROL1,ROL2" que no incluya el rol actual.
+  // Se usa tanto en el sidebar (fijo) como en contenido recién cargado en #viewRoot
+  // (por ejemplo, la pestaña "Devoluciones" dentro de Préstamos, que solo ve el Admin).
+  function applyRoleVisibility(scope) {
+    scope.querySelectorAll('[data-roles]').forEach((el) => {
+      const allowed = el.getAttribute('data-roles').split(',').map(r => r.trim());
+      el.style.display = allowed.includes(ROLE) ? '' : 'none';
+    });
+  }
+
+  applyRoleVisibility(document);
+
   // ---------- Modo oscuro ----------
   // Se guarda en localStorage para que se recuerde entre visitas.
   const DARK_MODE_KEY = 'siptec-dark-mode';
@@ -54,6 +74,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const subtabInput = viewRoot.querySelector(`#${subtabId}`);
         if (subtabInput) subtabInput.checked = true;
       }
+
+      // Si la vista trae elementos con data-roles (como la pestaña "Devoluciones"
+      // dentro de Préstamos, que solo ve el Administrador), los filtramos.
+      applyRoleVisibility(viewRoot);
 
       // Si la vista recién cargada trae el switch de apariencia, lo sincronizamos
       // con la preferencia guardada (por si el usuario ya lo había activado antes).
@@ -104,6 +128,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // (El "d-none" ya no se quita desde el login, porque el login vive en otra página/archivo).
   if (appShell) {
     appShell.classList.remove('d-none');
-    loadView('loadDashboard');
+
+    // Panel de control es solo del Administrador. Si el rol actual no lo tiene
+    // (Empleado, IT), aterrizamos en la primera vista que sí le toca según el sidebar.
+    const landingButton = document.querySelector('.nav-item[data-view="loadDashboard"]')?.style.display !== 'none'
+      ? document.querySelector('.nav-item[data-view="loadDashboard"]')
+      : document.querySelector('.nav-item:not([style*="display: none"])');
+
+    const landingView = landingButton ? landingButton.getAttribute('data-view') : 'loadDashboard';
+    navItems.forEach(item => item.classList.toggle('active', item === landingButton));
+    loadView(landingView);
   }
 });
