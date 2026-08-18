@@ -75,6 +75,16 @@
             <label class="form-label" for="itemName">Nombre</label>
             <input id="itemName" class="form-control" required>
           </div>
+          <div class="col-6">
+            <label class="form-label" for="itemBrand">Marca</label>
+            <select id="itemBrand" class="form-select" required>
+              <option value="" disabled selected>Selecciona una marca</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label" for="itemStock">Stock</label>
+            <input id="itemStock" class="form-control" type="number" min="1" required>
+          </div>
           <div class="col-12">
             <label class="form-label" for="itemLocation">Ubicación</label>
             <input id="itemLocation" class="form-control" value="Bodega técnica" required>
@@ -122,6 +132,16 @@
               <option>Electrónico</option>
               <option>Mecánico</option>
             </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="editItemBrand">Marca</label>
+            <select id="editItemBrand" class="form-select" required>
+              <option value="" disabled selected>Selecciona una marca</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="editItemStock">Stock</label>
+            <input id="editItemStock" class="form-control" type="number" min="1" required>
           </div>
           <div class="col-md-6">
             <label class="form-label" for="editItemLocation">Area / Ubicación</label>

@@ -9,10 +9,6 @@
 
   <div class="segmented-tabs">
     <label for="tabPrestamos">Préstamos</label>
-    <!-- TODO: Franklin confirmó que Devoluciones también la debe ver el Empleado
-         encargado de gestionar préstamos, no solo el Administrador. Eso depende de
-         un dato por usuario en la DB (ej. un flag "gestionaPrestamos"), no solo del
-         rol general. Por ahora solo Admin la ve; se ampliará cuando la DB esté lista. -->
     <label for="tabDevoluciones" data-roles="ADMINISTRADOR">Devoluciones</label>
     <label for="tabHistorial">Historial</label>
   </div>
@@ -26,7 +22,8 @@
               <th>Código</th>
               <th>Nombre de usuario</th>
               <th>Fecha inicio</th>
-              <th>Producto</th>
+              <th>Tipo</th>
+              <th>Producto / Área</th>
               <th>Estado</th>
               <th></th>
             </tr>
@@ -36,8 +33,18 @@
               <td class="code-tag">PR-001</td>
               <td>Admin Principal</td>
               <td>2026-06-13</td>
-              <td>Cautin</td>
+              <td><span class="status active">Herramienta</span></td>
+              <td>Cautin <span class="muted">(x2)</span></td>
               <td><span class="status active">Aprobado</span></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="code-tag">PR-002</td>
+              <td>Soporte IT</td>
+              <td>2026-06-14</td>
+              <td><span class="status pending">Área</span></td>
+              <td>Laboratorio de Cómputo 1</td>
+              <td><span class="status pending">Pendiente</span></td>
               <td></td>
             </tr>
           </tbody>
@@ -47,8 +54,10 @@
       <div class="action-panel">
         <h3>Préstamo PR-002</h3> <!-- Aqui me imagino que tambien irian inserciones de JavaScript-->
         <span class="status pending">Pendiente</span>
+        <span class="field-label">Tipo de solicitud</span>
+        <p style="margin:4px 0 12px; font-weight:600;">Área completa — Laboratorio de Cómputo 1</p>
         <span class="field-label">Descripción</span>
-        <div class="desc-box">Soporte IT solicita Martillo.</div>
+        <div class="desc-box">Soporte IT solicita el laboratorio para una capacitación.</div>
         <span class="field-label">Estado del material</span>
         <p style="margin:0 0 16px; font-weight:600;">Pendiente</p>
         <div class="quick-actions">
