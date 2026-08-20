@@ -1,10 +1,10 @@
 <h2>Reportes</h2>
 
-<div class="tabs-css">
+<div class="contenedor-pestanas">
   <input type="radio" name="reportTabs" id="tabHistorialReportes" checked>
   <input type="radio" name="reportTabs" id="tabGenerados">
 
-  <div class="segmented-tabs">
+  <div class="pestanas-segmentadas">
     <label for="tabHistorialReportes">Historial de reportes pasados</label>
     <label for="tabGenerados">Reportes generados</label>
   </div>
@@ -14,7 +14,7 @@
   </style>
 
   <div class="panel-historial-reportes">
-    <div class="table-card">
+    <div class="tarjeta-tabla">
       <table>
         <thead>
           <tr>
@@ -29,13 +29,13 @@
             <td>Inventario mensual — julio</td>
             <td>Admin Principal</td>
             <td>31/07/2026</td>
-            <td><span class="status active">Inventario</span></td>
+            <td><span class="estado activo">Inventario</span></td>
           </tr>
           <tr>
             <td>Préstamos vencidos</td>
             <td>Admin Principal</td>
             <td>15/06/2026</td>
-            <td><span class="status pending">Préstamos</span></td>
+            <td><span class="estado pendiente">Préstamos</span></td>
           </tr>
         </tbody>
       </table>
@@ -43,17 +43,17 @@
   </div>
 
   <div class="panel-generados">
-    <div class="devolucion-card">
+    <div class="tarjeta-devolucion">
       <div class="top-row">
         <h4 style="margin:0;">Daño reportado: Soldadora</h4>
-        <span class="status daniado">Daño</span>
+        <span class="estado daniado">Daño</span>
       </div>
-      <p class="muted" style="margin-bottom:14px;">Generado por Admin Principal. La maquinaría tiene fallos eléctricos.</p>
-      <p class="muted" style="margin-bottom:16px;">Fecha: 17/07/26, 4:36 p. m.</p>
+      <p class="atenuado" style="margin-bottom:14px;">Generado por Admin Principal. La maquinaría tiene fallos eléctricos.</p>
+      <p class="atenuado" style="margin-bottom:16px;">Fecha: 17/07/26, 4:36 p. m.</p>
       <div class="card-actions">
-        <button type="button" class="btn-pill btn-outline" data-bs-toggle="modal" data-bs-target="#reportViewerModal"><i class="bi bi-eye"></i> Ver</button>
+        <button type="button" class="boton-pastilla boton-contorno" data-bs-toggle="modal" data-bs-target="#reportViewerModal"><i class="bi bi-eye"></i> Ver</button>
         <div class="dropdown">
-          <button class="btn-pill btn-solid-blue dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <button class="boton-pastilla boton-solido-azul dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-download"></i> Exportar
           </button>
           <ul class="dropdown-menu">
@@ -63,7 +63,7 @@
             <li><button class="dropdown-item" type="button" data-export="excel">Excel</button></li>
           </ul>
         </div>
-        <button type="button" class="btn-pill btn-solid-red" title="Eliminar reporte"><img src="../img/icons8-trash-24.png" alt="Eliminar" class="row-icon" style="filter:invert(1); opacity:1;"></button>
+        <button type="button" class="boton-pastilla boton-solido-rojo" title="Eliminar reporte"><img src="../img/icons8-trash-24.png" alt="Eliminar" class="icono-fila" style="filter:invert(1); opacity:1;"></button>
       </div>
     </div>
   </div>

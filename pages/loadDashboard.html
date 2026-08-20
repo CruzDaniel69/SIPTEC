@@ -1,78 +1,78 @@
 <h2>¡Bienvenido, Administrador!</h2>
-<p class="muted mb-4">Resumen general del sistema</p>
+<p class="atenuado mb-4">Resumen general del sistema</p>
 
-<div class="stat-grid">
-  <div class="stat-card">
-    <div class="stat-icon icon-blue"><i class="bi bi-box-seam"></i></div>
+<div class="cuadricula-estadisticas">
+  <div class="tarjeta-estadistica">
+    <div class="icono-estadistica icon-blue"><i class="bi bi-box-seam"></i></div>
     <div>
       <span>Total de implementos</span>
       <strong>350</strong>
-      <a href="#" class="stat-link">Ver más</a>
+      <a href="#" class="enlace-estadistica">Ver más</a>
     </div>
   </div>
 
-  <div class="stat-card">
-    <div class="stat-icon icon-green"><i class="bi bi-arrow-repeat"></i></div>
+  <div class="tarjeta-estadistica">
+    <div class="icono-estadistica icon-green"><i class="bi bi-arrow-repeat"></i></div>
     <div>
       <span>Préstamos activos</span>
       <strong>28</strong>
-      <a href="#" class="stat-link">Ver más</a>
+      <a href="#" class="enlace-estadistica">Ver más</a>
     </div>
   </div>
 
-  <div class="stat-card">
-    <div class="stat-icon icon-orange"><i class="bi bi-clock-history"></i></div>
+  <div class="tarjeta-estadistica">
+    <div class="icono-estadistica icon-orange"><i class="bi bi-clock-history"></i></div>
     <div>
       <span>Devoluciones pendientes</span>
       <strong>12</strong>
-      <a href="#" class="stat-link">Ver más</a>
+      <a href="#" class="enlace-estadistica">Ver más</a>
     </div>
   </div>
 
-  <div class="stat-card">
-    <div class="stat-icon icon-purple"><i class="bi bi-check-lg"></i></div>
+  <div class="tarjeta-estadistica">
+    <div class="icono-estadistica icon-purple"><i class="bi bi-check-lg"></i></div>
     <div>
       <span>Disponibles</span>
       <strong>310</strong>
-      <a href="#" class="stat-link">Ver más</a>
+      <a href="#" class="enlace-estadistica">Ver más</a>
     </div>
   </div>
 </div>
 
-<div class="dashboard-grid">
+<div class="cuadricula-panel">
   <div class="panel">
-    <h3 class="panel-title">Préstamos por semana</h3>
-    <div class="chart-bars">
-      <div class="bar" style="height:37%"><span>15</span></div>
-      <div class="bar" style="height:55%"><span>22</span></div>
-      <div class="bar" style="height:45%"><span>18</span></div>
-      <div class="bar" style="height:75%"><span>30</span></div>
-      <div class="bar" style="height:62%"><span>25</span></div>
-      <div class="bar" style="height:30%"><span>12</span></div>
-      <div class="bar" style="height:20%"><span>8</span></div>
+    <h3 class="titulo-panel">Préstamos por semana</h3>
+    <div class="barras-grafica">
+      <div class="barra" style="height:37%"><span>15</span></div>
+      <div class="barra" style="height:55%"><span>22</span></div>
+      <div class="barra" style="height:45%"><span>18</span></div>
+      <div class="barra" style="height:75%"><span>30</span></div>
+      <div class="barra" style="height:62%"><span>25</span></div>
+      <div class="barra" style="height:30%"><span>12</span></div>
+      <div class="barra" style="height:20%"><span>8</span></div>
     </div>
-    <div class="chart-labels">
+    <div class="etiquetas-grafica">
       <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
     </div>
   </div>
 
   <div class="panel">
-    <h3 class="panel-title">Estado del inventario</h3>
-    <div class="pie-wrap">
-      <div class="pie" style="background: conic-gradient(#33c24d 0 68%, var(--blue) 68% 88%, #ffdd28 88% 100%);"></div>
-      <div class="legend">
-        <div><span class="dot" style="background:#33c24d"></span>Disponibles <strong>310 (68%)</strong></div>
-        <div><span class="dot" style="background:var(--blue)"></span>Prestados <strong>28 (20%)</strong></div>
-        <div><span class="dot" style="background:#ffdd28"></span>En mantenimiento <strong>12 (12%)</strong></div>
+    <h3 class="titulo-panel">Estado del inventario</h3>
+    <div class="contenedor-grafico-circular">
+      <div class="grafico-circular" style="background: conic-gradient(#33c24d 0 68%, var(--blue) 68% 88%, #ffdd28 88% 100%);"></div>
+      <div class="leyenda">
+        <div><span class="punto" style="background:#33c24d"></span>Disponibles <strong>310 (68%)</strong></div>
+        <div><span class="punto" style="background:var(--blue)"></span>Prestados <strong>28 (20%)</strong></div>
+        <div><span class="punto" style="background:#ffdd28"></span>En mantenimiento <strong>12 (12%)</strong></div>
       </div>
     </div>
   </div>
 </div>
 
-<div class="dashboard-grid dashboard-grid-bottom">
-  <div class="table-wrap">
-    <h3 class="panel-title ActRecFix">Actividad reciente</h3>
-    <table class="sip-table">
+<div class="cuadricula-panel cuadricula-panel-inferior">
+  <div class="contenedor-tabla">
+    <h3 class="titulo-panel ActRecFix">Actividad reciente</h3>
+    <table class="tabla-datos">
       <thead>
         <tr>
           <th>Implemento</th>
@@ -88,47 +88,47 @@
           <td>Juan Pérez</td>
           <td>08/05/2026</td>
           <td>15/05/2026</td>
-          <td><span class="status prestado">Prestado</span></td>
+          <td><span class="estado prestado">Prestado</span></td>
         </tr>
         <tr>
           <td><i class="bi bi-pc-display me-2"></i>Computadora</td>
           <td>Carlos Torrez</td>
           <td>14/05/2026</td>
           <td>14/05/2026</td>
-          <td><span class="status prestado">Prestado</span></td>
+          <td><span class="estado prestado">Prestado</span></td>
         </tr>
         <tr>
           <td><i class="bi bi-key me-2"></i>Juego de llaves</td>
           <td>Luis Ramos</td>
           <td>04/06/2026</td>
           <td>12/05/2026</td>
-          <td><span class="status devuelto">Devuelto</span></td>
+          <td><span class="estado devuelto">Devuelto</span></td>
         </tr>
         <tr>
           <td><i class="bi bi-calculator me-2"></i>Lab contabilidad</td>
           <td>Ana Torres</td>
           <td>05/05/2026</td>
           <td>20/08/2026</td>
-          <td><span class="status prestado">Prestado</span></td>
+          <td><span class="estado prestado">Prestado</span></td>
         </tr>
         <tr>
           <td><i class="bi bi-truck me-2"></i>Automotriz</td>
           <td>Marcos Pérez</td>
           <td>03/06/2026</td>
           <td>04/04/2026</td>
-          <td><span class="status devuelto">Devuelto</span></td>
+          <td><span class="estado devuelto">Devuelto</span></td>
         </tr>
       </tbody>
     </table>
   </div>
 
   <div class="panel">
-    <h3 class="panel-title">Acciones rápidas</h3>
-    <div class="quick-actions">
-      <button type="button" class="qa-btn qa-blue" data-bs-toggle="modal" data-bs-target="#itemModal"><i class="bi bi-plus-circle"></i> Nuevo préstamo</button>
-      <button type="button" class="qa-btn qa-green" data-view="loans" data-subtab="tabDevoluciones"><i class="bi bi-arrow-counterclockwise"></i> Registrar devolución</button>
-      <button type="button" class="qa-btn qa-purple" data-bs-toggle="modal" data-bs-target="#itemModal"><i class="bi bi-box-seam"></i> Agregar implemento</button>
-      <button type="button" class="qa-btn qa-gray" data-view="reports"><i class="bi bi-file-earmark-bar-graph"></i> Generar reporte</button>
+    <h3 class="titulo-panel">Acciones rápidas</h3>
+    <div class="acciones-rapidas">
+      <button type="button" class="boton-accion-rapida accion-rapida-azul" data-bs-toggle="modal" data-bs-target="#itemModal"><i class="bi bi-plus-circle"></i> Nuevo préstamo</button>
+      <button type="button" class="boton-accion-rapida accion-rapida-verde" data-view="loans" data-subtab="tabDevoluciones"><i class="bi bi-arrow-counterclockwise"></i> Registrar devolución</button>
+      <button type="button" class="boton-accion-rapida accion-rapida-morado" data-bs-toggle="modal" data-bs-target="#itemModal"><i class="bi bi-box-seam"></i> Agregar implemento</button>
+      <button type="button" class="boton-accion-rapida accion-rapida-gris" data-view="reports"><i class="bi bi-file-earmark-bar-graph"></i> Generar reporte</button>
     </div>
   </div>
 </div>

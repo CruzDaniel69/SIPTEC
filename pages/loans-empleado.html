@@ -1,0 +1,97 @@
+<div class="encabezado-pagina">
+  <h1>Préstamos</h1>
+</div>
+
+<div class="contenedor-pestanas">
+  <input type="radio" name="empleadoLoanTabs" id="tabNuevoPrestamo" checked>
+  <input type="radio" name="empleadoLoanTabs" id="tabMisPrestamos">
+
+  <div class="pestanas-segmentadas">
+    <label for="tabNuevoPrestamo">Nuevo préstamo</label>
+    <label for="tabMisPrestamos">Mis préstamos</label>
+  </div>
+
+  <div class="panel-pestana panel-nuevo-prestamo">
+    <div class="panel">
+      <input type="radio" name="tipoSolicitudEmpleado" id="empTipoHerramienta" checked>
+      <input type="radio" name="tipoSolicitudEmpleado" id="empTipoArea">
+
+      <div class="pestanas-segmentadas" style="margin-bottom: 18px;">
+        <label for="empTipoHerramienta">Herramienta</label>
+        <label for="empTipoArea">Área</label>
+      </div>
+
+      <div class="empleado-seccion-herramienta row g-3">
+        <div class="col-md-8">
+          <label class="form-label" for="empEquipo">Herramienta a solicitar</label>
+          <input id="empEquipo" class="form-control" placeholder="Busca el equipo" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="empCantidad">Cantidad</label>
+          <input id="empCantidad" class="form-control" type="number" min="1" value="1" required>
+        </div>
+      </div>
+
+      <div class="empleado-seccion-area row g-3">
+        <div class="col-12">
+          <label class="form-label" for="empArea">Área a solicitar</label>
+          <input id="empArea" class="form-control" placeholder="Ej. Laboratorio de Cómputo 1" required>
+        </div>
+      </div>
+
+      <div class="row g-3" style="margin-top: 2px;">
+        <div class="col-md-6">
+          <label class="form-label" for="empFechaInicio">Fecha de inicio</label>
+          <input id="empFechaInicio" class="form-control" type="date" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="empFechaEsperada">Fecha esperada de devolución</label>
+          <input id="empFechaEsperada" class="form-control" type="date" required>
+        </div>
+        <div class="col-12">
+          <small class="atenuado">La fecha esperada no puede ser mayor a 1 mes desde el inicio.</small>
+        </div>
+        <div class="col-12">
+          <label class="form-label" for="empObservaciones">Observaciones (opcional)</label>
+          <textarea id="empObservaciones" class="form-control" rows="3" maxlength="150" placeholder="Escribe observaciones..."></textarea>
+        </div>
+      </div>
+
+      <button type="button" class="boton-pastilla boton-solido-verde" style="margin-top: 18px;" onclick="Swal.fire({icon:'success', title:'¡Préstamo enviado!', text:'Un administrador va a revisar tu solicitud.', confirmButtonColor:'#28a745'});">
+        <i class="bi bi-send"></i> Enviar solicitud
+      </button>
+    </div>
+  </div>
+
+  <div class="panel-pestana panel-mis-prestamos">
+    <div class="tarjeta-tabla">
+      <table>  <!-- En esta Tabla iran las inserciones para el javascript, filtradas por el usuario en sesión -->
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Fecha inicio</th>
+            <th>Tipo</th>
+            <th>Producto / Área</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="etiqueta-codigo">PR-004</td>
+            <td>2026-07-20</td>
+            <td><span class="estado activo">Herramienta</span></td>
+            <td>Multímetro <span class="atenuado">(x1)</span></td>
+            <td><span class="estado pendiente">Pendiente</span></td>
+          </tr>
+          <tr>
+            <td class="etiqueta-codigo">PR-001</td>
+            <td>2026-06-13</td>
+            <td><span class="estado activo">Herramienta</span></td>
+            <td>Cautin <span class="atenuado">(x2)</span></td>
+            <td><span class="estado activo">Aprobado</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

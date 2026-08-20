@@ -7,6 +7,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const ROLE = (localStorage.getItem('siptec-role') || 'ADMINISTRADOR').toUpperCase();
   document.body.dataset.role = ROLE;
 
+  const nombreRolTopbar = document.getElementById('nombreRolTopbar');
+  if (nombreRolTopbar) {
+    const nombresLegibles = {
+      ADMINISTRADOR: 'Administrador',
+      EMPLEADO: 'Empleado',
+      IT: 'Soporte IT',
+    };
+    nombreRolTopbar.textContent = nombresLegibles[ROLE] || ROLE;
+  }
+
   function applyRoleVisibility(scope) {
     scope.querySelectorAll('[data-roles]').forEach((el) => {
       const allowed = el.getAttribute('data-roles').split(',').map(r => r.trim());
@@ -19,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const DARK_MODE_KEY = 'siptec-dark-mode';
 
   function applyDarkMode(isDark) {
-    document.body.classList.toggle('dark-mode', isDark);
+    document.body.classList.toggle('modo-oscuro', isDark);
     const toggle = document.getElementById('darkModeToggle');
     if (toggle) toggle.checked = isDark;
   }
@@ -37,7 +47,12 @@ document.addEventListener('DOMContentLoaded', () => {
   async function loadView(viewName, subtabId) {
     if (!viewRoot) return;
     try {
-      const response = await fetch(`${viewName}.html`);
+      let archivoReal = viewName;
+      if (viewName === 'loans' && ROLE === 'EMPLEADO') {
+        archivoReal = 'loans-empleado';
+      }
+
+      const response = await fetch(`${archivoReal}.html`);
 
       if (!response.ok) {
         throw new Error('No se pudo cargar la vista');
@@ -52,13 +67,13 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       applyRoleVisibility(viewRoot);
-      applyDarkMode(document.body.classList.contains('dark-mode'));
+      applyDarkMode(document.body.classList.contains('modo-oscuro'));
 
       navItems.forEach(item => {
         if (item.getAttribute('data-view') === viewName) {
-          item.classList.add('active');
+          item.classList.add('activo');
         } else {
-          item.classList.remove('active');
+          item.classList.remove('activo');
         }
       });
     } catch (error) {
@@ -96,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
       : document.querySelector('.nav-item:not([style*="display: none"])');
 
     const landingView = landingButton ? landingButton.getAttribute('data-view') : 'loadDashboard';
-    navItems.forEach(item => item.classList.toggle('active', item === landingButton));
+    navItems.forEach(item => item.classList.toggle('activo', item === landingButton));
     loadView(landingView);
   }
 });
