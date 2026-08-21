@@ -447,6 +447,10 @@
      gap: 16px;
  }
 
+ .cuadricula-estadisticas.columnas-3 {
+     grid-template-columns: repeat(3, minmax(130px, 1fr));
+ }
+
  .tarjeta-estadistica,
  .panel,
  .tarjeta-datos,
@@ -1422,6 +1426,10 @@
          grid-template-columns: repeat(2, 1fr);
      }
 
+     .cuadricula-estadisticas.columnas-3 {
+         grid-template-columns: repeat(2, 1fr);
+     }
+
      .cuadricula-panel {
          grid-template-columns: 1fr;
      }
@@ -1496,6 +1504,7 @@
      }
 
      .cuadricula-estadisticas,
+     .cuadricula-estadisticas.columnas-3,
      .cuadricula-panel,
      .diseno-prestamo,
      .cuadricula-devoluciones,

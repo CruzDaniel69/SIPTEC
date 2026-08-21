@@ -5,6 +5,7 @@ import { initLoansEmpleadoController } from '../controllers/loansEmpleadoControl
 import { initReportsController } from '../controllers/reportsController.js';
 import { initSettingsController } from '../controllers/settingsController.js';
 import { initPanelController } from '../controllers/panelController.js';
+import { initPanelEmpleadoController } from '../controllers/panelEmpleadoController.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -58,6 +59,9 @@ document.addEventListener('DOMContentLoaded', () => {
       let archivoReal = viewName;
       if (viewName === 'loans' && ROLE === 'EMPLEADO') {
         archivoReal = 'loans-empleado';
+      }
+      if (viewName === 'loadDashboard' && ROLE === 'EMPLEADO') {
+        archivoReal = 'loadDashboard-empleado';
       }
 
       const response = await fetch(`${archivoReal}.html`);
@@ -120,6 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initReportsController();
   initSettingsController();
   initPanelController();
+  initPanelEmpleadoController();
 
   if (appShell) {
     appShell.classList.remove('d-none');

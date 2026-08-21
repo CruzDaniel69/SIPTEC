@@ -7,6 +7,7 @@ import { obtenerDetallePrestamoHerramientas } from "../services/detallePrestamoH
 import { obtenerAreas } from "../services/areaService.js";
 import { obtenerDetallePrestamoAreas } from "../services/detallePrestamoAreaService.js";
 import { obtenerEstadosHerramienta } from "../services/estadoHerramientaService.js";
+import { puedeGestionar } from "../utils/rol.js";
 
 const cache = {
     prestamos: [], estados: [], usuarios: [], herramientas: [], detallesHerramienta: [],
@@ -110,6 +111,8 @@ function pintarGenerados() {
         return;
     }
 
+    const puedeResolver = puedeGestionar(["ADMINISTRADOR", "IT"]);
+
     grid.innerHTML = items.map(({ detalle, nombre }) => `
         <div class="tarjeta-devolucion">
             <div class="top-row">
@@ -130,9 +133,10 @@ function pintarGenerados() {
                         <li><button class="dropdown-item" type="button" data-export="excel" data-iddetalle="${detalle.idDetalle}">Excel</button></li>
                     </ul>
                 </div>
+                ${puedeResolver ? `
                 <button type="button" class="boton-pastilla boton-solido-rojo" title="Marcar como resuelto" data-resolver="${detalle.idDetalle}">
                     <img src="../img/icons8-trash-24.png" alt="Eliminar" class="icono-fila" style="filter:invert(1); opacity:1;">
-                </button>
+                </button>` : ""}
             </div>
         </div>
     `).join("");

@@ -1,0 +1,59 @@
+<h2>¡Bienvenido, Empleado!</h2>
+<p class="atenuado mb-4">Resumen de tus préstamos</p>
+
+<div class="cuadricula-estadisticas columnas-3">
+  <div class="tarjeta-estadistica">
+    <div class="icono-estadistica icon-blue"><i class="bi bi-arrow-repeat"></i></div>
+    <div>
+      <span>Préstamos activos</span>
+      <strong id="statMisPrestamosActivos">-</strong>
+      <button type="button" class="enlace-estadistica" data-view="loans" data-subtab="tabMisPrestamos">Ver más</button>
+    </div>
+  </div>
+
+  <div class="tarjeta-estadistica">
+    <div class="icono-estadistica icon-orange"><i class="bi bi-clock-history"></i></div>
+    <div>
+      <span>Por vencer pronto</span>
+      <strong id="statPorVencer">-</strong>
+      <button type="button" class="enlace-estadistica" data-view="loans" data-subtab="tabMisPrestamos">Ver más</button>
+    </div>
+  </div>
+
+  <div class="tarjeta-estadistica">
+    <div class="icono-estadistica icon-purple"><i class="bi bi-hourglass-split"></i></div>
+    <div>
+      <span>Pendientes de aprobación</span>
+      <strong id="statMisPendientes">-</strong>
+      <button type="button" class="enlace-estadistica" data-view="loans" data-subtab="tabMisPrestamos">Ver más</button>
+    </div>
+  </div>
+</div>
+
+<div class="cuadricula-panel cuadricula-panel-inferior">
+  <div class="contenedor-tabla">
+    <h3 class="titulo-panel ActRecFix">Mis préstamos activos</h3>
+    <table class="tabla-datos">
+      <thead>
+        <tr>
+          <th>Herramienta / Área</th>
+          <th>Fecha inicio</th>
+          <th>Fecha esperada</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody id="misPrestamosActivosBody">
+        <tr><td colspan="4" class="text-center atenuado">Cargando...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <h3 class="titulo-panel">Acciones rápidas</h3>
+    <div class="acciones-rapidas">
+      <button type="button" class="boton-accion-rapida accion-rapida-azul" data-view="loans"><i class="bi bi-plus-circle"></i> Solicitar préstamo</button>
+      <button type="button" class="boton-accion-rapida accion-rapida-verde" data-view="loans" data-subtab="tabMisPrestamos"><i class="bi bi-list-check"></i> Ver mis préstamos</button>
+      <button type="button" class="boton-accion-rapida accion-rapida-gris" data-view="reports"><i class="bi bi-file-earmark-bar-graph"></i> Ver reportes</button>
+    </div>
+  </div>
+</div>
