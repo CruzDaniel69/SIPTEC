@@ -1,6 +1,10 @@
 <div class="encabezado-pagina">
   <h1>Usuarios</h1>
   <div class="acciones-encabezado">
+    <div class="buscador-seccion">
+      <i class="bi bi-search"></i>
+      <input type="search" id="usersSearch" placeholder="Buscar por nombre o correo...">
+    </div>
     <button type="button" class="boton-pastilla boton-solido-verde" data-bs-toggle="modal" data-bs-target="#userModal">
       <i class="bi bi-person-plus"></i> Crear usuario
     </button>
@@ -19,19 +23,8 @@
         <th>Acciones</th>
       </tr>
     </thead>
-    <tbody>
-      <tr>
-        <td class="nombre-elemento"><span class="icono-elemento"><i class="bi bi-person"></i></span>Admin Principal</td>
-        <td>admin@correo.com</td>
-        <td>ADMINISTRADOR</td>
-        <td>ITR</td>
-        <td><span class="estado activo">Activo</span></td>
-        <td>
-          <div class="acciones-fila">
-            <button title="Editar" data-bs-toggle="modal" data-bs-target="#userEditModal"><img src="../img/icons8-pencil-24.png" alt="Editar" class="icono-fila"></button>
-          </div>
-        </td>
-      </tr>
+    <tbody id="usersTableBody">
+      <tr><td colspan="6" class="text-center atenuado">Cargando usuarios...</td></tr>
     </tbody>
   </table>
 </div>

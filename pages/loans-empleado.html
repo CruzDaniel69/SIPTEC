@@ -24,7 +24,9 @@
       <div class="empleado-seccion-herramienta row g-3">
         <div class="col-md-8">
           <label class="form-label" for="empEquipo">Herramienta a solicitar</label>
-          <input id="empEquipo" class="form-control" placeholder="Busca el equipo" required>
+          <input id="empEquipo" class="form-control" list="empEquipoOptions" maxlength="100" placeholder="Busca el equipo" required>
+          <datalist id="empEquipoOptions"></datalist>
+          <small id="empEquipoAviso" class="atenuado"></small>
         </div>
         <div class="col-md-4">
           <label class="form-label" for="empCantidad">Cantidad</label>
@@ -35,7 +37,9 @@
       <div class="empleado-seccion-area row g-3">
         <div class="col-12">
           <label class="form-label" for="empArea">Área a solicitar</label>
-          <input id="empArea" class="form-control" placeholder="Ej. Laboratorio de Cómputo 1" required>
+          <input id="empArea" class="form-control" list="empAreaOptions" maxlength="100" placeholder="Ej. Laboratorio de Cómputo 1" required>
+          <datalist id="empAreaOptions"></datalist>
+          <small id="empAreaAviso" class="atenuado"></small>
         </div>
       </div>
 
@@ -57,7 +61,7 @@
         </div>
       </div>
 
-      <button type="button" class="boton-pastilla boton-solido-verde" style="margin-top: 18px;" onclick="Swal.fire({icon:'success', title:'¡Préstamo enviado!', text:'Un administrador va a revisar tu solicitud.', confirmButtonColor:'#28a745'});">
+      <button type="button" id="btnEnviarSolicitud" class="boton-pastilla boton-solido-verde" style="margin-top: 18px;">
         <i class="bi bi-send"></i> Enviar solicitud
       </button>
     </div>
@@ -75,21 +79,8 @@
             <th>Estado</th>
           </tr>
         </thead>
-        <tbody>
-          <tr>
-            <td class="etiqueta-codigo">PR-004</td>
-            <td>2026-07-20</td>
-            <td><span class="estado activo">Herramienta</span></td>
-            <td>Multímetro <span class="atenuado">(x1)</span></td>
-            <td><span class="estado pendiente">Pendiente</span></td>
-          </tr>
-          <tr>
-            <td class="etiqueta-codigo">PR-001</td>
-            <td>2026-06-13</td>
-            <td><span class="estado activo">Herramienta</span></td>
-            <td>Cautin <span class="atenuado">(x2)</span></td>
-            <td><span class="estado activo">Aprobado</span></td>
-          </tr>
+        <tbody id="misPrestamosTableBody">
+          <tr><td colspan="5" class="text-center atenuado">Cargando tus préstamos...</td></tr>
         </tbody>
       </table>
     </div>

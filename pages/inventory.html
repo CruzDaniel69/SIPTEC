@@ -1,56 +1,90 @@
 <div class="encabezado-pagina">
-  <h1>Herramientas</h1>
-  <div class="acciones-encabezado">
-    <div class="dropdown">
-      <button class="boton-pastilla boton-contorno dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-        <i class="bi bi-funnel"></i> Todo
-      </button>
-      <ul class="dropdown-menu dropdown-menu-end">
-        <li><button class="dropdown-item" type="button" data-filter="todo">Todo</button></li>
-        <li><button class="dropdown-item" type="button" data-filter="disponible">Disponible</button></li>
-        <li><button class="dropdown-item" type="button" data-filter="prestado">Prestado</button></li>
-        <li><button class="dropdown-item" type="button" data-filter="daniado">Dañado</button></li>
-      </ul>
-    </div>
-    <button type="button" class="boton-pastilla boton-solido-verde" data-bs-toggle="modal" data-bs-target="#itemModal" data-roles="ADMINISTRADOR,IT">
-      <i class="bi bi-plus-lg"></i> Agregar producto
-    </button>
-  </div>
+  <h1>Herramientas / Áreas</h1>
 </div>
 
-<div class="tarjeta-tabla">
-  <table>  <!-- En esta Tabla iran las inserciones para el javascript-->
-    <thead>
-      <tr>
-        <th>Código</th>
-        <th>Nombre</th>
-        <th>Marca</th>
-        <th>Categoría</th>
-        <th>Stock</th>
-        <th>Área</th>
-        <th>Adquisición</th>
-        <th>Estado</th>
-        <th data-roles="ADMINISTRADOR,IT">Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><!-- Y justo aqui se insertaran -->
-        <td class="etiqueta-codigo">CAA-120</td>
-        <td class="nombre-elemento"><span class="icono-elemento"><i class="bi bi-tools"></i></span>Cautin</td>
-        <td>Stanley</td>
-        <td>Material de apoyo</td>
-        <td>8</td>
-        <td>Bodega técnica</td>
-        <td>2026-05-12</td>
-        <td><span class="estado prestado">Prestado</span></td>
-        <td data-roles="ADMINISTRADOR,IT">
-          <div class="acciones-fila">
-            <button title="Editar" data-bs-toggle="modal" data-bs-target="#itemEditModal"><img src="../img/icons8-pencil-24.png" alt="Editar" class="icono-fila"></button>
-            <button title="Cambiar estado"><i class="bi bi-arrow-repeat"></i></button>
-            <button class="danger" title="Eliminar"><img src="../img/icons8-trash-24.png" alt="Eliminar" class="icono-fila"></button>
-          </div>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+<div class="contenedor-pestanas">
+  <input type="radio" name="inventoryTabs" id="tabHerramientasInv" checked>
+  <input type="radio" name="inventoryTabs" id="tabAreasInv">
+
+  <div class="pestanas-segmentadas">
+    <label for="tabHerramientasInv">Herramientas</label>
+    <label for="tabAreasInv" data-roles="ADMINISTRADOR,IT">Áreas</label>
+  </div>
+
+  <div class="panel-pestana panel-herramientas-inv">
+    <div class="encabezado-pagina" style="margin-bottom:14px;">
+      <span></span>
+      <div class="acciones-encabezado">
+        <div class="buscador-seccion">
+          <i class="bi bi-search"></i>
+          <input type="search" id="inventorySearch" placeholder="Buscar por código o nombre...">
+        </div>
+        <div class="dropdown">
+          <button class="boton-pastilla boton-contorno dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-funnel"></i> Todo
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><button class="dropdown-item" type="button" data-filter="todo">Todo</button></li>
+            <li><button class="dropdown-item" type="button" data-filter="disponible">Disponible</button></li>
+            <li><button class="dropdown-item" type="button" data-filter="prestado">Prestado</button></li>
+            <li><button class="dropdown-item" type="button" data-filter="daniado">Dañado</button></li>
+          </ul>
+        </div>
+        <button type="button" class="boton-pastilla boton-solido-verde" data-bs-toggle="modal" data-bs-target="#itemModal" data-roles="ADMINISTRADOR,IT">
+          <i class="bi bi-plus-lg"></i> Agregar producto
+        </button>
+      </div>
+    </div>
+
+    <div class="tarjeta-tabla">
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Marca</th>
+            <th>Categoría</th>
+            <th>Stock</th>
+            <th>Área</th>
+            <th>Estado</th>
+            <th data-roles="ADMINISTRADOR,IT">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="inventoryTableBody">
+          <tr><td colspan="8" class="text-center atenuado">Cargando herramientas...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel-pestana panel-areas-inv" data-roles="ADMINISTRADOR,IT">
+    <div class="encabezado-pagina" style="margin-bottom:14px;">
+      <span></span>
+      <div class="acciones-encabezado">
+        <div class="buscador-seccion">
+          <i class="bi bi-search"></i>
+          <input type="search" id="areasSearch" placeholder="Buscar por nombre de área...">
+        </div>
+        <button type="button" class="boton-pastilla boton-solido-verde" data-bs-toggle="modal" data-bs-target="#areaModal">
+          <i class="bi bi-plus-lg"></i> Agregar área
+        </button>
+      </div>
+    </div>
+
+    <div class="tarjeta-tabla">
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre del área</th>
+            <th>Tipo de área</th>
+            <th>Herramientas asignadas</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="areasTableBody">
+          <tr><td colspan="4" class="text-center atenuado">Cargando áreas...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>

@@ -16,7 +16,7 @@
   <div class="panel-pestana panel-prestamos">
     <div class="diseno-prestamo">
       <div class="tarjeta-tabla">
-        <table>  <!-- En esta Tabla iran las inserciones para el javascript-->
+        <table>
           <thead>
             <tr>
               <th>Código</th>
@@ -28,89 +28,39 @@
               <th></th>
             </tr>
           </thead>
-          <tbody>
-            <tr><!-- Y justo aqui se insertaran -->
-              <td class="etiqueta-codigo">PR-001</td>
-              <td>Admin Principal</td>
-              <td>2026-06-13</td>
-              <td><span class="estado activo">Herramienta</span></td>
-              <td>Cautin <span class="atenuado">(x2)</span></td>
-              <td><span class="estado activo">Aprobado</span></td>
-              <td></td>
-            </tr>
-            <tr>
-              <td class="etiqueta-codigo">PR-002</td>
-              <td>Soporte IT</td>
-              <td>2026-06-14</td>
-              <td><span class="estado pendiente">Área</span></td>
-              <td>Laboratorio de Cómputo 1</td>
-              <td><span class="estado pendiente">Pendiente</span></td>
-              <td></td>
-            </tr>
+          <tbody id="loansTableBody">
+            <tr><td colspan="7" class="text-center atenuado">Cargando préstamos...</td></tr>
           </tbody>
         </table>
       </div>
 
-      <div class="panel-acciones">
-        <h3>Préstamo PR-002</h3> <!-- Aqui me imagino que tambien irian inserciones de JavaScript-->
-        <span class="estado pendiente">Pendiente</span>
-        <span class="field-label">Tipo de solicitud</span>
-        <p style="margin:4px 0 12px; font-weight:600;">Área completa — Laboratorio de Cómputo 1</p>
-        <span class="field-label">Descripción</span>
-        <div class="desc-box">Soporte IT solicita el laboratorio para una capacitación.</div>
-        <span class="field-label">Estado del material</span>
-        <p style="margin:0 0 16px; font-weight:600;">Pendiente</p>
-        <div class="acciones-rapidas">
-          <button type="button" class="boton-accion-rapida accion-rapida-verde"><i class="bi bi-check-lg"></i> Aprobar préstamo</button>
-          <button type="button" class="boton-accion-rapida accion-rapida-rojo"><i class="bi bi-x-lg"></i> Rechazar préstamo</button>
-        </div>
+      <div class="panel-acciones" id="loanDetailPanel">
+        <p class="atenuado">Selecciona un préstamo de la lista para ver el detalle.</p>
       </div>
     </div>
   </div>
 
   <div class="panel-pestana panel-devoluciones">
-    <div class="cuadricula-devoluciones">
-      <div class="tarjeta-devolucion"><!-- En estas Cards tambien irian-->
-        <div class="top-row">
-          <span class="estado pendiente">Retrasado</span>
-          <span class="etiqueta-codigo">CAA-120</span>
-        </div>
-        <h4>Admin Principal</h4>
-        <div class="tool-line"><i class="bi bi-box-seam"></i>Cautín</div>
-        <div class="card-actions">
-          <button type="button" class="boton-pastilla boton-solido-verde"><i class="bi bi-check-lg"></i>Devuelto</button>
-          <button type="button" class="boton-pastilla boton-solido-naranja" data-bs-toggle="modal" data-bs-target="#damageReportModal"><i class="bi bi-exclamation-triangle"></i>Reportar daño</button>
-        </div>
-      </div>
+    <div class="cuadricula-devoluciones" id="devolucionesGrid">
+      <p class="atenuado">Cargando devoluciones pendientes...</p>
     </div>
   </div>
 
   <div class="panel-pestana panel-historial">
-    <div class="barra-herramientas">
-      <span></span>
-      <button type="button" class="boton-pastilla boton-solido-verde"><i class="bi bi-download"></i>Exportar</button>
-    </div>
     <div class="tarjeta-tabla">
       <table>
         <thead>
           <tr>
             <th>Código</th>
-            <th>Herramienta</th>
+            <th>Herramienta / Área</th>
             <th>Inicio</th>
             <th>Entrega</th>
             <th>Usuario</th>
             <th>Estado</th>
           </tr>
         </thead>
-        <tbody>
-          <tr>
-            <td class="etiqueta-codigo">EQP-065</td>
-            <td class="nombre-elemento"><span class="icono-elemento"><i class="bi bi-speaker"></i></span>Equipo de sonido</td>
-            <td>2026-06-13</td>
-            <td>2026-07-17</td>
-            <td>Admin Principal</td>
-            <td><span class="estado devuelto">Devuelto</span></td>
-          </tr>
+        <tbody id="historialTableBody">
+          <tr><td colspan="6" class="text-center atenuado">Cargando historial...</td></tr>
         </tbody>
       </table>
     </div>

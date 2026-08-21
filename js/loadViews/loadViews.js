@@ -1,3 +1,11 @@
+import { initInventoryController } from '../controllers/inventoryController.js';
+import { initUsersController } from '../controllers/usersController.js';
+import { initLoansController } from '../controllers/loansController.js';
+import { initLoansEmpleadoController } from '../controllers/loansEmpleadoController.js';
+import { initReportsController } from '../controllers/reportsController.js';
+import { initSettingsController } from '../controllers/settingsController.js';
+import { initPanelController } from '../controllers/panelController.js';
+
 document.addEventListener('DOMContentLoaded', () => {
 
   const viewRoot = document.getElementById('viewRoot');
@@ -69,6 +77,8 @@ document.addEventListener('DOMContentLoaded', () => {
       applyRoleVisibility(viewRoot);
       applyDarkMode(document.body.classList.contains('modo-oscuro'));
 
+      document.dispatchEvent(new CustomEvent('view:loaded', { detail: { view: viewName, real: archivoReal } }));
+
       navItems.forEach(item => {
         if (item.getAttribute('data-view') === viewName) {
           item.classList.add('activo');
@@ -102,6 +112,14 @@ document.addEventListener('DOMContentLoaded', () => {
       loadView(viewName, subtabId);
     }
   });
+
+  initInventoryController();
+  initUsersController();
+  initLoansController();
+  initLoansEmpleadoController();
+  initReportsController();
+  initSettingsController();
+  initPanelController();
 
   if (appShell) {
     appShell.classList.remove('d-none');

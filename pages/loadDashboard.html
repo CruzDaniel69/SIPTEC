@@ -6,7 +6,7 @@
     <div class="icono-estadistica icon-blue"><i class="bi bi-box-seam"></i></div>
     <div>
       <span>Total de implementos</span>
-      <strong>350</strong>
+      <strong id="statTotalImplementos">-</strong>
       <a href="#" class="enlace-estadistica">Ver más</a>
     </div>
   </div>
@@ -15,7 +15,7 @@
     <div class="icono-estadistica icon-green"><i class="bi bi-arrow-repeat"></i></div>
     <div>
       <span>Préstamos activos</span>
-      <strong>28</strong>
+      <strong id="statPrestamosActivos">-</strong>
       <a href="#" class="enlace-estadistica">Ver más</a>
     </div>
   </div>
@@ -24,7 +24,7 @@
     <div class="icono-estadistica icon-orange"><i class="bi bi-clock-history"></i></div>
     <div>
       <span>Devoluciones pendientes</span>
-      <strong>12</strong>
+      <strong id="statDevolucionesPendientes">-</strong>
       <a href="#" class="enlace-estadistica">Ver más</a>
     </div>
   </div>
@@ -33,7 +33,7 @@
     <div class="icono-estadistica icon-purple"><i class="bi bi-check-lg"></i></div>
     <div>
       <span>Disponibles</span>
-      <strong>310</strong>
+      <strong id="statDisponibles">-</strong>
       <a href="#" class="enlace-estadistica">Ver más</a>
     </div>
   </div>
@@ -59,11 +59,11 @@
   <div class="panel">
     <h3 class="titulo-panel">Estado del inventario</h3>
     <div class="contenedor-grafico-circular">
-      <div class="grafico-circular" style="background: conic-gradient(#33c24d 0 68%, var(--blue) 68% 88%, #ffdd28 88% 100%);"></div>
-      <div class="leyenda">
-        <div><span class="punto" style="background:#33c24d"></span>Disponibles <strong>310 (68%)</strong></div>
-        <div><span class="punto" style="background:var(--blue)"></span>Prestados <strong>28 (20%)</strong></div>
-        <div><span class="punto" style="background:#ffdd28"></span>En mantenimiento <strong>12 (12%)</strong></div>
+      <div class="grafico-circular" id="graficoCircularInventario" style="background: conic-gradient(#33c24d 0 100%);"></div>
+      <div class="leyenda" id="leyendaInventario">
+        <div><span class="punto" style="background:#33c24d"></span>Disponibles <strong id="leyendaDisponibles">- (0%)</strong></div>
+        <div><span class="punto" style="background:var(--blue)"></span>Prestados <strong id="leyendaPrestados">- (0%)</strong></div>
+        <div><span class="punto" style="background:#ffdd28"></span>Dañados <strong id="leyendaDanados">- (0%)</strong></div>
       </div>
     </div>
   </div>
@@ -82,42 +82,8 @@
           <th>Estado</th>
         </tr>
       </thead>
-      <tbody>
-        <tr>
-          <td><i class="bi bi-tools me-2"></i>Taladro eléctrico</td>
-          <td>Juan Pérez</td>
-          <td>08/05/2026</td>
-          <td>15/05/2026</td>
-          <td><span class="estado prestado">Prestado</span></td>
-        </tr>
-        <tr>
-          <td><i class="bi bi-pc-display me-2"></i>Computadora</td>
-          <td>Carlos Torrez</td>
-          <td>14/05/2026</td>
-          <td>14/05/2026</td>
-          <td><span class="estado prestado">Prestado</span></td>
-        </tr>
-        <tr>
-          <td><i class="bi bi-key me-2"></i>Juego de llaves</td>
-          <td>Luis Ramos</td>
-          <td>04/06/2026</td>
-          <td>12/05/2026</td>
-          <td><span class="estado devuelto">Devuelto</span></td>
-        </tr>
-        <tr>
-          <td><i class="bi bi-calculator me-2"></i>Lab contabilidad</td>
-          <td>Ana Torres</td>
-          <td>05/05/2026</td>
-          <td>20/08/2026</td>
-          <td><span class="estado prestado">Prestado</span></td>
-        </tr>
-        <tr>
-          <td><i class="bi bi-truck me-2"></i>Automotriz</td>
-          <td>Marcos Pérez</td>
-          <td>03/06/2026</td>
-          <td>04/04/2026</td>
-          <td><span class="estado devuelto">Devuelto</span></td>
-        </tr>
+      <tbody id="actividadRecienteBody">
+        <tr><td colspan="5" class="text-center atenuado">Cargando actividad reciente...</td></tr>
       </tbody>
     </table>
   </div>
@@ -125,7 +91,7 @@
   <div class="panel">
     <h3 class="titulo-panel">Acciones rápidas</h3>
     <div class="acciones-rapidas">
-      <button type="button" class="boton-accion-rapida accion-rapida-azul" data-bs-toggle="modal" data-bs-target="#itemModal"><i class="bi bi-plus-circle"></i> Nuevo préstamo</button>
+      <button type="button" class="boton-accion-rapida accion-rapida-azul" data-view="loans"><i class="bi bi-plus-circle"></i> Nuevo préstamo</button>
       <button type="button" class="boton-accion-rapida accion-rapida-verde" data-view="loans" data-subtab="tabDevoluciones"><i class="bi bi-arrow-counterclockwise"></i> Registrar devolución</button>
       <button type="button" class="boton-accion-rapida accion-rapida-morado" data-bs-toggle="modal" data-bs-target="#itemModal"><i class="bi bi-box-seam"></i> Agregar implemento</button>
       <button type="button" class="boton-accion-rapida accion-rapida-gris" data-view="reports"><i class="bi bi-file-earmark-bar-graph"></i> Generar reporte</button>
