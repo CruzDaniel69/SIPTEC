@@ -158,6 +158,19 @@ async function cambiarEstadoPrestamo(fila, nombreEstado) {
             estado: estado.id,
         });
 
+        if (nombreEstado === "APROBADO" && fila.detalleHerramienta) {
+            const detalle = cache.detallesHerramienta.find((d) => d.idHerramienta === fila.detalleHerramienta.herramienta);
+            const idEnPrestamo = (cache.estadosHerramienta.find((e) => e.nombreEstadoHerramienta === "EN PRESTAMO") || {}).id;
+            if (detalle && idEnPrestamo) {
+                await actualizarDetalleHerramienta(detalle.idDetalle, {
+                    idHerramienta: detalle.idHerramienta,
+                    idMarca: detalle.idMarca,
+                    idEstadoHerramienta: idEnPrestamo,
+                    codInv: detalle.codInv,
+                });
+            }
+        }
+
         Swal.fire({ icon: "success", title: nombreEstado === "APROBADO" ? "¡Préstamo aprobado!" : "Préstamo rechazado", confirmButtonColor: "#28a745" });
         await recargarVista();
     } catch (error) {
