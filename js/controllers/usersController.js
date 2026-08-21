@@ -175,14 +175,12 @@ function initModalEditar() {
             return;
         }
 
-        const usuarioActual = cache.usuarios.find((u) => u.id === id);
-
         try {
             await actualizarUsuario(id, {
                 nombreUsuario: nombre,
                 apellidoUsuario: apellido,
                 correoUsuario: correo,
-                passwordHash: password || (usuarioActual ? usuarioActual.passwordHash : ""),
+                passwordHash: password,
                 rol: idRolPorNombre(rolTexto),
                 institucion: idInstitucionPorNombre(institucionTexto),
             });

@@ -6,6 +6,7 @@ import { obtenerHerramientaCategorias, agregarHerramientaCategoria, eliminarHerr
 import { obtenerEstadosHerramienta } from "../services/estadoHerramientaService.js";
 import { obtenerAreas, agregarArea, actualizarArea, eliminarArea } from "../services/areaService.js";
 import { obtenerTiposArea, agregarTipoArea } from "../services/tipoAreaService.js";
+import { puedeGestionar } from "../utils/rol.js";
 
 const cache = { herramientas: [], detalles: [], marcas: [], categorias: [], relCategorias: [], estados: [], areas: [], tiposArea: [] };
 let filtroActual = "todo";
@@ -14,6 +15,10 @@ let terminoBusquedaAreas = "";
 let modalesListos = false;
 
 const patronCodigo = /^[A-Za-z0-9-]+$/;
+
+function puedeGestionarInventario() {
+    return puedeGestionar(["ADMINISTRADOR", "IT"]);
+}
 
 function claseEstado(nombreEstado) {
     if (nombreEstado === "DISPONIBLE") return "disponible";
@@ -92,9 +97,11 @@ function pintarTabla() {
     if (!tbody) return;
 
     const filas = filasFiltradas();
+    const puedeGestionarAqui = puedeGestionarInventario();
+    const totalColumnas = puedeGestionarAqui ? 8 : 7;
 
     if (filas.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center atenuado">No se encontraron herramientas.</td></tr>';
+        tbody.innerHTML = `<tr><td colspan="${totalColumnas}" class="text-center atenuado">No se encontraron herramientas.</td></tr>`;
         return;
     }
 
@@ -107,7 +114,8 @@ function pintarTabla() {
             <td>${fila.stock}</td>
             <td>${fila.nombreArea}</td>
             <td><span class="estado ${claseEstado(fila.nombreEstado)}">${fila.nombreEstado}</span></td>
-            <td data-roles="ADMINISTRADOR,IT">
+            ${puedeGestionarAqui ? `
+            <td>
                 <div class="acciones-fila">
                     <button type="button" title="Editar" data-bs-toggle="modal" data-bs-target="#itemEditModal"
                         data-id="${fila.idHerramienta}" data-detalle="${fila.idDetalle}" data-cod="${fila.codInv}"
@@ -119,7 +127,7 @@ function pintarTabla() {
                         <img src="../img/icons8-trash-24.png" alt="Eliminar" class="icono-fila">
                     </button>
                 </div>
-            </td>
+            </td>` : ""}
         </tr>
     `).join("");
 }
@@ -169,9 +177,11 @@ function pintarTablaAreas() {
     if (!tbody) return;
 
     const areas = areasFiltradas();
+    const puedeGestionarAqui = puedeGestionarInventario();
+    const totalColumnas = puedeGestionarAqui ? 4 : 3;
 
     if (areas.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center atenuado">No se encontraron áreas.</td></tr>';
+        tbody.innerHTML = `<tr><td colspan="${totalColumnas}" class="text-center atenuado">No se encontraron áreas.</td></tr>`;
         return;
     }
 
@@ -184,6 +194,7 @@ function pintarTablaAreas() {
             <td class="nombre-elemento"><span class="icono-elemento"><i class="bi bi-geo-alt"></i></span>${area.nombreArea}</td>
             <td>${tipo ? tipo.nombreTipoArea : "-"}</td>
             <td>${cantidadAsignadas}</td>
+            ${puedeGestionarAqui ? `
             <td>
                 <div class="acciones-fila">
                     <button type="button" title="Editar" data-bs-toggle="modal" data-bs-target="#areaEditModal"
@@ -194,7 +205,7 @@ function pintarTablaAreas() {
                         <img src="../img/icons8-trash-24.png" alt="Eliminar" class="icono-fila">
                     </button>
                 </div>
-            </td>
+            </td>` : ""}
         </tr>`;
     }).join("");
 }

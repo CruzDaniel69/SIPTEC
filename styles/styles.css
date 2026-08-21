@@ -515,10 +515,15 @@
  .enlace-estadistica {
      display: inline-block;
      margin-top: 4px;
+     border: 0;
+     background: none;
+     padding: 0;
+     font: inherit;
      color: var(--blue);
      font-size: 11px;
      font-weight: 700;
      text-decoration: none;
+     cursor: pointer;
  }
 
  .enlace-estadistica:hover {
