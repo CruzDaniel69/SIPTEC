@@ -254,7 +254,9 @@ function initEventosGrid() {
             if (!item) return;
             document.getElementById("reportViewerTitle").textContent = "Daño reportado: " + item.nombre;
             document.getElementById("reportViewerContent").textContent = contenidoReporte(item.detalle, item.nombre);
-            document.getElementById("reportViewerModal").dataset.idDetalle = idDetalle;
+            const modal = document.getElementById("reportViewerModal");
+            modal.dataset.idDetalle = idDetalle;
+            bootstrap.Modal.getOrCreateInstance(modal).show();
         }
 
         if (exportBtn) {

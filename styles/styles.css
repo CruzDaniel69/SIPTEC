@@ -563,6 +563,10 @@
      font-weight: 700;
  }
 
+ .contenedor-tabla .titulo-panel {
+     padding: 18px 18px 0;
+ }
+
  .barras-grafica {
      height: 170px;
      display: grid;

@@ -1,7 +1,7 @@
 import { obtenerHerramientas, agregarHerramienta, actualizarHerramienta, eliminarHerramienta } from "../services/herramientaService.js";
 import { obtenerDetallesHerramienta, agregarDetalleHerramienta, actualizarDetalleHerramienta, eliminarDetalleHerramienta } from "../services/detalleHerramientaService.js";
-import { obtenerMarcas } from "../services/marcaService.js";
-import { obtenerCategorias } from "../services/categoriaService.js";
+import { obtenerMarcas, agregarMarca } from "../services/marcaService.js";
+import { obtenerCategorias, agregarCategoria } from "../services/categoriaService.js";
 import { obtenerHerramientaCategorias, agregarHerramientaCategoria, eliminarHerramientaCategoria } from "../services/herramientaCategoriaService.js";
 import { obtenerEstadosHerramienta } from "../services/estadoHerramientaService.js";
 import { obtenerAreas, agregarArea, actualizarArea, eliminarArea } from "../services/areaService.js";
@@ -164,6 +164,35 @@ async function resolverTipoArea(nombre) {
     const creado = await agregarTipoArea({ nombreTipoArea: nombreNormalizado });
     cache.tiposArea.push(creado);
     return creado.id;
+}
+
+async function resolverMarca(nombre) {
+    const nombreNormalizado = (nombre || "").trim();
+    if (!nombreNormalizado) return null;
+
+    const existente = cache.marcas.find((m) => m.nombreMarca.toLowerCase() === nombreNormalizado.toLowerCase());
+    if (existente) return existente.id;
+
+    const creada = await agregarMarca({ nombreMarca: nombreNormalizado });
+    cache.marcas.push(creada);
+    return creada.id;
+}
+
+async function resolverCategoria(nombre) {
+    const nombreNormalizado = (nombre || "").trim();
+    if (!nombreNormalizado) return null;
+
+    const existente = cache.categorias.find((c) => c.nombreCategoria.toLowerCase() === nombreNormalizado.toLowerCase());
+    if (existente) return existente.id;
+
+    const creada = await agregarCategoria({ nombreCategoria: nombreNormalizado });
+    cache.categorias.push(creada);
+    return creada.id;
+}
+
+function poblarDatalist(datalist, lista, campoNombre) {
+    if (!datalist) return;
+    datalist.innerHTML = lista.map((item) => `<option value="${item[campoNombre]}"></option>`).join("");
 }
 
 function areasFiltradas() {
@@ -363,17 +392,17 @@ function initModalCrear() {
 
     itemModal.addEventListener("show.bs.modal", () => {
         form.reset();
-        poblarSelect(document.getElementById("itemCategory"), cache.categorias, "nombreCategoria");
-        poblarSelect(document.getElementById("itemBrand"), cache.marcas, "nombreMarca");
+        poblarDatalist(document.getElementById("itemCategoryList"), cache.categorias, "nombreCategoria");
+        poblarDatalist(document.getElementById("itemBrandList"), cache.marcas, "nombreMarca");
     });
 
     form.addEventListener("submit", async (evento) => {
         evento.preventDefault();
 
         const codigo = document.getElementById("itemCode").value.trim();
-        const categoriaId = document.getElementById("itemCategory").value;
+        const categoriaTexto = document.getElementById("itemCategory").value.trim();
         const nombre = document.getElementById("itemName").value.trim();
-        const marcaId = document.getElementById("itemBrand").value;
+        const marcaTexto = document.getElementById("itemBrand").value.trim();
         const stock = Number(document.getElementById("itemStock").value);
         const ubicacion = document.getElementById("itemLocation").value.trim();
 
@@ -385,8 +414,8 @@ function initModalCrear() {
             Swal.fire({ icon: "warning", title: "Datos incompletos", text: "Escribe el nombre de la herramienta." });
             return;
         }
-        if (!marcaId) {
-            Swal.fire({ icon: "warning", title: "Datos incompletos", text: "Selecciona una marca." });
+        if (!marcaTexto) {
+            Swal.fire({ icon: "warning", title: "Datos incompletos", text: "Escribe una marca." });
             return;
         }
         if (!stock || stock < 1) {
@@ -402,6 +431,8 @@ function initModalCrear() {
 
         try {
             const idArea = await resolverArea(ubicacion);
+            const idMarca = await resolverMarca(marcaTexto);
+            const idCategoria = await resolverCategoria(categoriaTexto);
 
             const nuevaHerramienta = await agregarHerramienta({
                 nombreHerramienta: nombre,
@@ -412,14 +443,14 @@ function initModalCrear() {
 
             await agregarDetalleHerramienta({
                 idHerramienta: nuevaHerramienta.idHerramienta,
-                idMarca: Number(marcaId),
+                idMarca: idMarca,
                 idEstadoHerramienta: estadoDisponible.id,
                 codInv: codigo,
             });
 
-            if (categoriaId) {
+            if (idCategoria) {
                 await agregarHerramientaCategoria({
-                    idCategoria: Number(categoriaId),
+                    idCategoria: idCategoria,
                     idHerramienta: nuevaHerramienta.idHerramienta,
                 });
             }

@@ -62,11 +62,8 @@
           </div>
           <div class="col-6">
             <label class="form-label" for="itemCategory">Categoría</label>
-            <select id="itemCategory" class="form-select">
-              <option>Material de apoyo</option>
-              <option>Equipo técnico</option>
-              <option>Equipo de medición</option>
-            </select>
+            <input id="itemCategory" class="form-control" list="itemCategoryList" placeholder="Escribe o crea una categoría">
+            <datalist id="itemCategoryList"></datalist>
           </div>
           <div class="col-12">
             <label class="form-label" for="itemName">Nombre</label>
@@ -74,9 +71,8 @@
           </div>
           <div class="col-6">
             <label class="form-label" for="itemBrand">Marca</label>
-            <select id="itemBrand" class="form-select" required>
-              <option value="" disabled selected>Selecciona una marca</option>
-            </select>
+            <input id="itemBrand" class="form-control" list="itemBrandList" placeholder="Escribe o crea una marca" required>
+            <datalist id="itemBrandList"></datalist>
           </div>
           <div class="col-6">
             <label class="form-label" for="itemStock">Stock</label>
