@@ -12,9 +12,23 @@ function formatearFecha(fechaISO) {
     return fecha.toLocaleDateString("es-SV");
 }
 
+function mostrarNombreBienvenida() {
+    const titulo = document.getElementById("tituloBienvenida");
+    if (!titulo) return;
+
+    const nombre = localStorage.getItem("siptec-usuario-nombre");
+    const apellido = localStorage.getItem("siptec-usuario-apellido");
+
+    if (nombre) {
+        titulo.textContent = `¡Bienvenido, ${nombre}${apellido ? " " + apellido : ""}!`;
+    }
+}
+
 async function renderPanelView() {
     const statTotal = document.getElementById("statTotalImplementos");
     if (!statTotal) return;
+
+    mostrarNombreBienvenida();
 
     try {
         const [detalles, estadosHerramienta, prestamos, estadosPrestamo, detallesPrestamo, herramientas, usuarios] = await Promise.all([

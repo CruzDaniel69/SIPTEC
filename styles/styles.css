@@ -72,6 +72,12 @@
      overflow: hidden;
  }
 
+ .marca-logo.small img {
+     width: 100%;
+     height: 100%;
+     object-fit: cover;
+ }
+
  .tarjeta-login h1 {
      margin: 0;
      text-align: center;

@@ -1,7 +1,5 @@
 import { obtenerUsuarioPorId, actualizarUsuario } from "../services/usuarioService.js";
 
-let logoutListo = false;
-
 function idUsuarioActual() {
     return Number(localStorage.getItem("siptec-usuario-id")) || 1;
 }
@@ -9,28 +7,32 @@ function idUsuarioActual() {
 function cerrarSesion() {
     localStorage.removeItem("siptec-usuario-id");
     localStorage.removeItem("siptec-role");
+    localStorage.removeItem("siptec-usuario-nombre");
+    localStorage.removeItem("siptec-usuario-apellido");
+    localStorage.removeItem("siptec-usuario-correo");
     window.location.href = "../index.html";
 }
 
-function initLogout() {
-    if (logoutListo) return;
-    logoutListo = true;
+function conectarLogout(boton) {
+    if (!boton || boton.dataset.logoutConectado) return;
+    boton.dataset.logoutConectado = "true";
 
-    const botones = [document.getElementById("logoutBtn"), document.getElementById("logoutBtnSettings")];
-    botones.forEach((boton) => {
-        if (!boton) return;
-        boton.addEventListener("click", async () => {
-            const confirmacion = await Swal.fire({
-                icon: "question",
-                title: "¿Cerrar sesión?",
-                showCancelButton: true,
-                confirmButtonText: "Sí, salir",
-                cancelButtonText: "Cancelar",
-                confirmButtonColor: "#dc3545",
-            });
-            if (confirmacion.isConfirmed) cerrarSesion();
+    boton.addEventListener("click", async () => {
+        const confirmacion = await Swal.fire({
+            icon: "question",
+            title: "¿Cerrar sesión?",
+            showCancelButton: true,
+            confirmButtonText: "Sí, salir",
+            cancelButtonText: "Cancelar",
+            confirmButtonColor: "#dc3545",
         });
+        if (confirmacion.isConfirmed) cerrarSesion();
     });
+}
+
+function initLogout() {
+    conectarLogout(document.getElementById("logoutBtn"));
+    conectarLogout(document.getElementById("logoutBtnSettings"));
 }
 
 async function cargarPerfil() {
@@ -83,6 +85,7 @@ function initGuardarPerfil() {
 async function renderSettingsView() {
     await cargarPerfil();
     initGuardarPerfil();
+    initLogout();
 }
 
 export function initSettingsController() {

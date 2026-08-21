@@ -44,6 +44,9 @@ export function initLoginController() {
 
             localStorage.setItem("siptec-usuario-id", usuario.id);
             localStorage.setItem("siptec-role", usuario.nombreRol);
+            localStorage.setItem("siptec-usuario-nombre", usuario.nombreUsuario);
+            localStorage.setItem("siptec-usuario-apellido", usuario.apellidoUsuario);
+            localStorage.setItem("siptec-usuario-correo", usuario.correoUsuario);
 
             window.location.href = "pages/dashboard.html";
         }

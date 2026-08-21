@@ -20,9 +20,23 @@ function claseEstadoPrestamo(nombreEstado) {
     return mapa[nombreEstado] || "";
 }
 
+function mostrarNombreBienvenida() {
+    const titulo = document.getElementById("tituloBienvenida");
+    if (!titulo) return;
+
+    const nombre = localStorage.getItem("siptec-usuario-nombre");
+    const apellido = localStorage.getItem("siptec-usuario-apellido");
+
+    if (nombre) {
+        titulo.textContent = `¡Bienvenido, ${nombre}${apellido ? " " + apellido : ""}!`;
+    }
+}
+
 async function renderPanelEmpleadoView() {
     const statActivos = document.getElementById("statMisPrestamosActivos");
     if (!statActivos) return;
+
+    mostrarNombreBienvenida();
 
     try {
         const [prestamos, estados, herramientas, detallesHerramienta, areas, detallesArea] = await Promise.all([
