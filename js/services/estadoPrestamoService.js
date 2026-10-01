@@ -1,4 +1,4 @@
-const API_URL = "https://siptec-1744e9407a56.herokuapp.com/api/estado";
+const API_URL = "https://siptec-1744e9407a56.herokuapp.com/api/estado-prestamo";
 
 export async function obtenerEstadosPrestamo() {
     try {

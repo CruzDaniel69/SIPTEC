@@ -19,7 +19,8 @@ export async function iniciarSesion(correo, clave) {
             throw new Error("Error al iniciar sesión: " + response.status);
         }
 
-        return await response.json();
+        const resultado = await response.json();
+        return resultado.data;
     }
     catch (error) {
         console.error("Error al iniciar sesión: " + error);
