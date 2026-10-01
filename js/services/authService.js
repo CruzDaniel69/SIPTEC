@@ -8,7 +8,7 @@ export async function iniciarSesion(correo, clave) {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ correo, clave })
+            body: JSON.stringify({ correo, password: clave })
         });
 
         if (response.status === 401) {
