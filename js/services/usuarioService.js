@@ -10,7 +10,7 @@ export async function obtenerUsuarios() {
 
         const resultado = await response.json();
 
-        return resultado.data;
+        return resultado.data ? resultado.data.content : [];
     }
     catch (error) {
         console.error("Error al obtener los usuarios: " + error);
