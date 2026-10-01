@@ -1,3 +1,8 @@
+ input[type="date"].fecha-invalida {
+     color: var(--red);
+     border-color: var(--red);
+ }
+
  :root {
      --navy: #001f3d;
      --navy-soft: #07345f;
@@ -879,14 +884,6 @@
      -webkit-backdrop-filter: blur(8px);
  }
 
- .estado::before,
- .insignia-estado::before {
-     content: "";
-     width: 6px;
-     height: 6px;
-     border-radius: 50%;
- }
-
  .estado.available,
  .estado.activo,
  .estado.devuelto,
@@ -896,15 +893,6 @@
      background: rgba(40, 167, 69, .22);
      border: 1px solid rgba(40, 167, 69, .4);
      color: #1b7a37;
- }
-
- .estado.available::before,
- .estado.activo::before,
- .estado.devuelto::before,
- .estado.disponible::before,
- .estado.entiempo::before,
- .insignia-estado.badge-success::before {
-     background: var(--green-deep);
  }
 
  .estado.borrowed,
@@ -918,15 +906,6 @@
      color: #9a6208;
  }
 
- .estado.borrowed::before,
- .estado.pendiente::before,
- .estado.prestado::before,
- .estado.revision::before,
- .estado.retrasado::before,
- .insignia-estado.badge-warning::before {
-     background: var(--orange);
- }
-
  .estado.damage,
  .estado.inactive,
  .estado.daniado,
@@ -935,14 +914,6 @@
      background: rgba(220, 53, 69, .2);
      border: 1px solid rgba(220, 53, 69, .4);
      color: #b0233a;
- }
-
- .estado.damage::before,
- .estado.inactive::before,
- .estado.daniado::before,
- .estado.dano::before,
- .insignia-estado.badge-danger::before {
-     background: var(--red);
  }
 
  .modo-oscuro .estado.available,

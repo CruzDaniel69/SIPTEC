@@ -231,6 +231,20 @@ async function marcarDevuelto(idPrestamo, idEstadoHerramientaDestino) {
         return;
     }
 
+    const confirmacion = await Swal.fire({
+        icon: "question",
+        title: "¿Confirmar devolución?",
+        text: "Vas a registrar esta devolución. ¿Deseas continuar?",
+        showCancelButton: true,
+        confirmButtonText: "Sí, registrar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#28a745",
+    });
+
+    if (!confirmacion.isConfirmed) {
+        return;
+    }
+
     try {
         const prestamoOriginal = cache.prestamos.find((p) => p.id === idPrestamo);
         await actualizarPrestamo(idPrestamo, {

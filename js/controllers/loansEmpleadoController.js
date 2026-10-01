@@ -188,6 +188,10 @@ async function enviarSolicitud() {
         document.getElementById("empArea").value = "";
         document.getElementById("empCantidad").value = "1";
         document.getElementById("empObservaciones").value = "";
+        document.getElementById("empFechaInicio").value = "";
+        const empFechaEsperada = document.getElementById("empFechaEsperada");
+        empFechaEsperada.value = "";
+        empFechaEsperada.classList.remove("fecha-invalida");
 
         await recargarVista();
     } catch (error) {
@@ -214,11 +218,22 @@ function initFormulario() {
     }
 
     const fechaInicioInput = document.getElementById("empFechaInicio");
+    const fechaEsperadaInput = document.getElementById("empFechaEsperada");
+
+    function validarFechasEnVivo() {
+        if (!fechaEsperadaInput) return;
+        if (!fechaInicioInput.value || !fechaEsperadaInput.value) {
+            fechaEsperadaInput.classList.remove("fecha-invalida");
+            return;
+        }
+        const resultado = fechasValidas(fechaInicioInput.value, fechaEsperadaInput.value);
+        fechaEsperadaInput.classList.toggle("fecha-invalida", !resultado.valido);
+    }
+
     if (fechaInicioInput) {
         const hoy = new Date().toISOString().split("T")[0];
         fechaInicioInput.min = hoy;
         fechaInicioInput.addEventListener("change", () => {
-            const fechaEsperadaInput = document.getElementById("empFechaEsperada");
             if (!fechaEsperadaInput || !fechaInicioInput.value) return;
 
             fechaEsperadaInput.min = fechaInicioInput.value;
@@ -226,7 +241,12 @@ function initFormulario() {
             const unMesDespues = new Date(fechaInicioInput.value);
             unMesDespues.setMonth(unMesDespues.getMonth() + 1);
             fechaEsperadaInput.max = unMesDespues.toISOString().split("T")[0];
+            validarFechasEnVivo();
         });
+    }
+
+    if (fechaEsperadaInput) {
+        fechaEsperadaInput.addEventListener("change", validarFechasEnVivo);
     }
 }
 

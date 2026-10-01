@@ -64,8 +64,9 @@
           </div>
           <div class="col-6">
             <label class="form-label" for="itemCategory">Categoría</label>
-            <input id="itemCategory" class="form-control" list="itemCategoryList" placeholder="Escribe o crea una categoría">
-            <datalist id="itemCategoryList"></datalist>
+            <select id="itemCategory" class="form-select">
+              <option value="" disabled selected>Selecciona una opción</option>
+            </select>
           </div>
           <div class="col-12">
             <label class="form-label" for="itemName">Nombre</label>
@@ -73,8 +74,9 @@
           </div>
           <div class="col-6">
             <label class="form-label" for="itemBrand">Marca</label>
-            <input id="itemBrand" class="form-control" list="itemBrandList" placeholder="Escribe o crea una marca" required>
-            <datalist id="itemBrandList"></datalist>
+            <select id="itemBrand" class="form-select" required>
+              <option value="" disabled selected>Selecciona una opción</option>
+            </select>
           </div>
           <div class="col-6">
             <label class="form-label" for="itemStock">Stock</label>
@@ -82,7 +84,9 @@
           </div>
           <div class="col-12">
             <label class="form-label" for="itemLocation">Ubicación</label>
-            <input id="itemLocation" class="form-control" value="Bodega técnica" required>
+            <select id="itemLocation" class="form-select" required>
+              <option value="" disabled selected>Selecciona una opción</option>
+            </select>
           </div>
         </div>
         <div class="modal-footer">
@@ -140,7 +144,9 @@
           </div>
           <div class="col-md-6">
             <label class="form-label" for="editItemLocation">Area / Ubicación</label>
-            <input id="editItemLocation" class="form-control" required>
+            <select id="editItemLocation" class="form-select" required>
+              <option value="" disabled selected>Selecciona una opción</option>
+            </select>
           </div>
         </div>
         <div class="modal-footer">

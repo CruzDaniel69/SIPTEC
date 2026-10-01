@@ -15,6 +15,7 @@ let terminoBusquedaAreas = "";
 let modalesListos = false;
 
 const patronCodigo = /^[A-Za-z0-9-]+$/;
+const patronTexto = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9.,()\-\s]+$/;
 
 function puedeGestionarInventario() {
     return puedeGestionar(["ADMINISTRADOR", "IT"]);
@@ -119,7 +120,7 @@ function pintarTabla() {
                 <div class="acciones-fila">
                     <button type="button" title="Editar" data-bs-toggle="modal" data-bs-target="#itemEditModal"
                         data-id="${fila.idHerramienta}" data-detalle="${fila.idDetalle}" data-cod="${fila.codInv}"
-                        data-nombre="${fila.nombre}" data-stock="${fila.stock}" data-area="${fila.nombreArea}"
+                        data-nombre="${fila.nombre}" data-stock="${fila.stock}" data-idarea="${fila.idArea}"
                         data-idmarca="${fila.idMarca}" data-idcategoria="${fila.idCategoria}" data-idestado="${fila.idEstadoHerramienta}">
                         <img src="../img/icons8-pencil-24.png" alt="Editar" class="icono-fila">
                     </button>
@@ -138,22 +139,6 @@ function poblarSelect(select, lista, campoNombre, valorSeleccionado) {
         lista.map((item) => `<option value="${item.id}" ${String(item.id) === String(valorSeleccionado) ? "selected" : ""}>${item[campoNombre]}</option>`).join("");
 }
 
-async function resolverArea(nombre) {
-    const nombreNormalizado = (nombre || "").trim();
-    if (!nombreNormalizado) return null;
-
-    const existente = cache.areas.find((a) => a.nombreArea.toLowerCase() === nombreNormalizado.toLowerCase());
-    if (existente) return existente.id;
-
-    if (cache.tiposArea.length === 0) {
-        throw new Error("No hay tipos de área configurados en el sistema.");
-    }
-
-    const creada = await agregarArea({ nombreArea: nombreNormalizado, tipoArea: cache.tiposArea[0].id });
-    cache.areas.push(creada);
-    return creada.id;
-}
-
 async function resolverTipoArea(nombre) {
     const nombreNormalizado = (nombre || "").trim();
     if (!nombreNormalizado) return null;
@@ -166,33 +151,53 @@ async function resolverTipoArea(nombre) {
     return creado.id;
 }
 
-async function resolverMarca(nombre) {
-    const nombreNormalizado = (nombre || "").trim();
-    if (!nombreNormalizado) return null;
 
-    const existente = cache.marcas.find((m) => m.nombreMarca.toLowerCase() === nombreNormalizado.toLowerCase());
-    if (existente) return existente.id;
-
-    const creada = await agregarMarca({ nombreMarca: nombreNormalizado });
-    cache.marcas.push(creada);
-    return creada.id;
+function poblarSelectConAgregar(select, lista, campoNombre, valorSeleccionado, etiquetaAgregar) {
+    if (!select) return;
+    const opciones = lista.map((item) =>
+        `<option value="${item.id}" ${String(item.id) === String(valorSeleccionado) ? "selected" : ""}>${item[campoNombre]}</option>`
+    ).join("");
+    select.innerHTML = '<option value="" disabled' + (valorSeleccionado ? "" : " selected") + '>Selecciona una opción</option>' +
+        opciones +
+        `<option value="__nuevo__">+ ${etiquetaAgregar}</option>`;
 }
 
-async function resolverCategoria(nombre) {
-    const nombreNormalizado = (nombre || "").trim();
-    if (!nombreNormalizado) return null;
+async function manejarAgregarNuevaOpcion(config) {
+    const { value: nombre } = await Swal.fire({
+        title: config.titulo,
+        input: "text",
+        inputPlaceholder: config.placeholder,
+        showCancelButton: true,
+        confirmButtonText: "Agregar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#001f3d",
+        inputValidator: (value) => {
+            const texto = (value || "").trim();
+            if (!texto) return "Escribe un nombre.";
+            if (!patronTexto.test(texto)) return "Ese nombre tiene símbolos no permitidos.";
+            return null;
+        },
+    });
 
-    const existente = cache.categorias.find((c) => c.nombreCategoria.toLowerCase() === nombreNormalizado.toLowerCase());
-    if (existente) return existente.id;
+    if (!nombre) return null;
 
-    const creada = await agregarCategoria({ nombreCategoria: nombreNormalizado });
-    cache.categorias.push(creada);
-    return creada.id;
+    try {
+        return await config.crear(nombre.trim());
+    } catch (error) {
+        console.error(error);
+        Swal.fire({ icon: "error", title: "No se pudo agregar", text: "Ocurrió un error al conectar con el servidor.", confirmButtonColor: "#dc3545" });
+        return null;
+    }
 }
 
-function poblarDatalist(datalist, lista, campoNombre) {
-    if (!datalist) return;
-    datalist.innerHTML = lista.map((item) => `<option value="${item[campoNombre]}"></option>`).join("");
+function conectarSelectConAgregar(select, config) {
+    if (!select) return;
+    select.addEventListener("change", async () => {
+        if (select.value !== "__nuevo__") return;
+
+        const creado = await manejarAgregarNuevaOpcion(config);
+        poblarSelectConAgregar(select, config.obtenerLista(), config.campoNombre, creado ? creado.id : "", config.etiquetaAgregar);
+    });
 }
 
 function areasFiltradas() {
@@ -260,6 +265,10 @@ function initModalCrearArea() {
             Swal.fire({ icon: "warning", title: "Datos incompletos", text: "Escribe el nombre del área." });
             return;
         }
+        if (!patronTexto.test(nombre)) {
+            Swal.fire({ icon: "warning", title: "Nombre inválido", text: "El nombre del área tiene símbolos no permitidos." });
+            return;
+        }
         if (!tipoTexto) {
             Swal.fire({ icon: "warning", title: "Datos incompletos", text: "Escribe el tipo de área." });
             return;
@@ -312,6 +321,10 @@ function initModalEditarArea() {
 
         if (!nombre || !tipoTexto) {
             Swal.fire({ icon: "warning", title: "Datos incompletos", text: "Revisa el nombre y el tipo de área." });
+            return;
+        }
+        if (!patronTexto.test(nombre)) {
+            Swal.fire({ icon: "warning", title: "Nombre inválido", text: "El nombre del área tiene símbolos no permitidos." });
             return;
         }
         if (cache.areas.some((a) => a.id !== id && a.nombreArea.toLowerCase() === nombre.toLowerCase())) {
@@ -390,21 +403,68 @@ function initModalCrear() {
     const form = document.getElementById("itemForm");
     if (!itemModal || !form) return;
 
+    const selectCategoria = document.getElementById("itemCategory");
+    const selectMarca = document.getElementById("itemBrand");
+    const selectUbicacion = document.getElementById("itemLocation");
+
+    conectarSelectConAgregar(selectCategoria, {
+        titulo: "Nueva categoría",
+        placeholder: "Nombre de la categoría",
+        obtenerLista: () => cache.categorias,
+        campoNombre: "nombreCategoria",
+        etiquetaAgregar: "Agregar nueva categoría",
+        crear: async (nombre) => {
+            const creada = await agregarCategoria({ nombreCategoria: nombre });
+            cache.categorias.push(creada);
+            return creada;
+        },
+    });
+
+    conectarSelectConAgregar(selectMarca, {
+        titulo: "Nueva marca",
+        placeholder: "Nombre de la marca",
+        obtenerLista: () => cache.marcas,
+        campoNombre: "nombreMarca",
+        etiquetaAgregar: "Agregar nueva marca",
+        crear: async (nombre) => {
+            const creada = await agregarMarca({ nombreMarca: nombre });
+            cache.marcas.push(creada);
+            return creada;
+        },
+    });
+
+    conectarSelectConAgregar(selectUbicacion, {
+        titulo: "Nueva ubicación",
+        placeholder: "Nombre de la ubicación",
+        obtenerLista: () => cache.areas,
+        campoNombre: "nombreArea",
+        etiquetaAgregar: "Agregar nueva ubicación",
+        crear: async (nombre) => {
+            if (cache.tiposArea.length === 0) {
+                throw new Error("No hay tipos de área configurados en el sistema.");
+            }
+            const creada = await agregarArea({ nombreArea: nombre, tipoArea: cache.tiposArea[0].id });
+            cache.areas.push(creada);
+            return creada;
+        },
+    });
+
     itemModal.addEventListener("show.bs.modal", () => {
         form.reset();
-        poblarDatalist(document.getElementById("itemCategoryList"), cache.categorias, "nombreCategoria");
-        poblarDatalist(document.getElementById("itemBrandList"), cache.marcas, "nombreMarca");
+        poblarSelectConAgregar(selectCategoria, cache.categorias, "nombreCategoria", "", "Agregar nueva categoría");
+        poblarSelectConAgregar(selectMarca, cache.marcas, "nombreMarca", "", "Agregar nueva marca");
+        poblarSelectConAgregar(selectUbicacion, cache.areas, "nombreArea", "", "Agregar nueva ubicación");
     });
 
     form.addEventListener("submit", async (evento) => {
         evento.preventDefault();
 
         const codigo = document.getElementById("itemCode").value.trim();
-        const categoriaTexto = document.getElementById("itemCategory").value.trim();
+        const idCategoria = selectCategoria.value;
         const nombre = document.getElementById("itemName").value.trim();
-        const marcaTexto = document.getElementById("itemBrand").value.trim();
+        const idMarca = selectMarca.value;
         const stock = Number(document.getElementById("itemStock").value);
-        const ubicacion = document.getElementById("itemLocation").value.trim();
+        const idArea = selectUbicacion.value;
 
         if (!codigo || !patronCodigo.test(codigo)) {
             Swal.fire({ icon: "warning", title: "Código inválido", text: "El código solo admite letras, números y guiones." });
@@ -414,8 +474,12 @@ function initModalCrear() {
             Swal.fire({ icon: "warning", title: "Datos incompletos", text: "Escribe el nombre de la herramienta." });
             return;
         }
-        if (!marcaTexto) {
-            Swal.fire({ icon: "warning", title: "Datos incompletos", text: "Escribe una marca." });
+        if (!patronTexto.test(nombre)) {
+            Swal.fire({ icon: "warning", title: "Nombre inválido", text: "El nombre de la herramienta tiene símbolos no permitidos." });
+            return;
+        }
+        if (!idMarca || idMarca === "__nuevo__") {
+            Swal.fire({ icon: "warning", title: "Datos incompletos", text: "Selecciona una marca." });
             return;
         }
         if (!stock || stock < 1) {
@@ -430,27 +494,23 @@ function initModalCrear() {
         }
 
         try {
-            const idArea = await resolverArea(ubicacion);
-            const idMarca = await resolverMarca(marcaTexto);
-            const idCategoria = await resolverCategoria(categoriaTexto);
-
             const nuevaHerramienta = await agregarHerramienta({
                 nombreHerramienta: nombre,
                 descripcionHerramienta: "",
                 stock: stock,
-                idArea: idArea,
+                idArea: idArea ? Number(idArea) : null,
             });
 
             await agregarDetalleHerramienta({
                 idHerramienta: nuevaHerramienta.idHerramienta,
-                idMarca: idMarca,
+                idMarca: Number(idMarca),
                 idEstadoHerramienta: estadoDisponible.id,
                 codInv: codigo,
             });
 
-            if (idCategoria) {
+            if (idCategoria && idCategoria !== "__nuevo__") {
                 await agregarHerramientaCategoria({
-                    idCategoria: idCategoria,
+                    idCategoria: Number(idCategoria),
                     idHerramienta: nuevaHerramienta.idHerramienta,
                 });
             }
@@ -470,18 +530,36 @@ function initModalEditar() {
     const form = document.getElementById("itemEditForm");
     if (!editModal || !form) return;
 
+    const selectUbicacion = document.getElementById("editItemLocation");
+
+    conectarSelectConAgregar(selectUbicacion, {
+        titulo: "Nueva ubicación",
+        placeholder: "Nombre de la ubicación",
+        obtenerLista: () => cache.areas,
+        campoNombre: "nombreArea",
+        etiquetaAgregar: "Agregar nueva ubicación",
+        crear: async (nombre) => {
+            if (cache.tiposArea.length === 0) {
+                throw new Error("No hay tipos de área configurados en el sistema.");
+            }
+            const creada = await agregarArea({ nombreArea: nombre, tipoArea: cache.tiposArea[0].id });
+            cache.areas.push(creada);
+            return creada;
+        },
+    });
+
     editModal.addEventListener("show.bs.modal", (evento) => {
         const boton = evento.relatedTarget;
         if (!boton) return;
 
         poblarSelect(document.getElementById("editItemCategory"), cache.categorias, "nombreCategoria", boton.dataset.idcategoria);
         poblarSelect(document.getElementById("editItemBrand"), cache.marcas, "nombreMarca", boton.dataset.idmarca);
+        poblarSelectConAgregar(selectUbicacion, cache.areas, "nombreArea", boton.dataset.idarea, "Agregar nueva ubicación");
 
         document.getElementById("editItemId").value = boton.dataset.id;
         document.getElementById("editItemCode").value = boton.dataset.cod;
         document.getElementById("editItemName").value = boton.dataset.nombre;
         document.getElementById("editItemStock").value = boton.dataset.stock;
-        document.getElementById("editItemLocation").value = boton.dataset.area === "Sin asignar" ? "" : boton.dataset.area;
 
         const estado = cache.estados.find((e) => String(e.id) === boton.dataset.idestado);
         const estadoSelect = document.getElementById("editItemStatus");
@@ -501,7 +579,7 @@ function initModalEditar() {
         const marcaId = document.getElementById("editItemBrand").value;
         const categoriaId = document.getElementById("editItemCategory").value;
         const stock = Number(document.getElementById("editItemStock").value);
-        const ubicacion = document.getElementById("editItemLocation").value.trim();
+        const idArea = selectUbicacion.value;
         const estadoTexto = document.getElementById("editItemStatus").value;
 
         if (!codigo || !patronCodigo.test(codigo)) {
@@ -512,19 +590,25 @@ function initModalEditar() {
             Swal.fire({ icon: "warning", title: "Datos incompletos", text: "Revisa el nombre y el stock." });
             return;
         }
+        if (!patronTexto.test(nombre)) {
+            Swal.fire({ icon: "warning", title: "Nombre inválido", text: "El nombre de la herramienta tiene símbolos no permitidos." });
+            return;
+        }
+        if (!idArea || idArea === "__nuevo__") {
+            Swal.fire({ icon: "warning", title: "Datos incompletos", text: "Selecciona una ubicación." });
+            return;
+        }
 
         const mapaInverso = { Disponible: "DISPONIBLE", Prestado: "EN PRESTAMO", Daniado: "DAÑADO" };
         const nuevoEstado = cache.estados.find((e) => e.nombreEstadoHerramienta === mapaInverso[estadoTexto]);
 
         try {
-            const idArea = await resolverArea(ubicacion);
-
             await actualizarHerramienta(idHerramienta, {
                 idHerramienta: idHerramienta,
                 nombreHerramienta: nombre,
                 descripcionHerramienta: "",
                 stock: stock,
-                idArea: idArea,
+                idArea: Number(idArea),
             });
 
             if (detalle) {
