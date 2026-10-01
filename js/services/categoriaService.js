@@ -1,8 +1,8 @@
-const API_URL = "http://localhost:8080/api/categoria";
+const API_URL = "https://siptec-1744e9407a56.herokuapp.com/api/categoria";
 
 export async function obtenerCategorias() {
     try {
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, { credentials: "include" });
 
         if (!response.ok) {
             throw new Error("Error al obtener las categorias");
@@ -21,6 +21,7 @@ export async function obtenerCategorias() {
 export async function agregarCategoria(categoria) {
     try {
         const response = await fetch(API_URL, {
+            credentials: "include",
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -43,6 +44,7 @@ export async function agregarCategoria(categoria) {
 export async function actualizarCategoria(id, categoria) {
     try {
         const response = await fetch(`${API_URL}/${id}`, {
+            credentials: "include",
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
@@ -65,6 +67,7 @@ export async function actualizarCategoria(id, categoria) {
 export async function eliminarCategoria(id) {
     try {
         const response = await fetch(`${API_URL}/${id}`, {
+            credentials: "include",
             method: "DELETE"
         });
 

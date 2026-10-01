@@ -157,6 +157,7 @@
  }
 
  .barra-lateral .nav-item {
+     position: relative;
      width: 100%;
      min-height: 56px;
      display: flex;
@@ -673,6 +674,32 @@
      transform: scale(.98);
  }
 
+ .badge-mini {
+     display: inline-flex;
+     align-items: center;
+     justify-content: center;
+     min-width: 18px;
+     height: 18px;
+     padding: 0 5px;
+     border-radius: 999px;
+     background: #dc3545;
+     color: #fff;
+     font-size: 11px;
+     font-weight: 800;
+     line-height: 1;
+ }
+
+ .badge-mini.badge-nav {
+     position: absolute;
+     top: 4px;
+     right: 12px;
+     min-width: 16px;
+     height: 16px;
+     padding: 0 4px;
+     font-size: 10px;
+     box-shadow: 0 0 0 2px var(--navy);
+ }
+
  .accion-rapida-azul {
      background: linear-gradient(180deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, 0) 55%), rgba(52, 155, 234, 0.96);
  }
@@ -1000,12 +1027,45 @@
      gap: 16px;
  }
 
+ .barra-seleccion-reportes {
+     display: flex;
+     align-items: center;
+     justify-content: space-between;
+     gap: 10px;
+     margin-bottom: 14px;
+ }
+
  .tarjeta-devolucion {
      background: var(--panel);
      border: 1px solid var(--line);
      border-radius: var(--radius-lg);
      box-shadow: var(--shadow-card);
      padding: 18px;
+     position: relative;
+     transition: border-color .12s ease, box-shadow .12s ease;
+ }
+
+ .tarjeta-devolucion.seleccionable {
+     padding-left: 46px;
+     cursor: pointer;
+ }
+
+ .tarjeta-devolucion.seleccionada {
+     border-color: var(--blue);
+     box-shadow: 0 0 0 2px rgba(25, 141, 230, .25);
+ }
+
+ .tarjeta-devolucion .check-seleccion-reporte {
+     display: none;
+     position: absolute;
+     top: 18px;
+     left: 18px;
+     width: 18px;
+     height: 18px;
+ }
+
+ .tarjeta-devolucion.seleccionable .check-seleccion-reporte {
+     display: block;
  }
 
  .tarjeta-devolucion .top-row {
@@ -1254,6 +1314,12 @@
      background: #0f1a25;
      border-color: var(--line);
      color: var(--ink);
+ }
+
+ .modo-oscuro .modal .form-control::placeholder,
+ .modo-oscuro .modal textarea.form-control::placeholder {
+     color: var(--ink-soft);
+     opacity: 1;
  }
 
  .modo-oscuro .modal .form-label {

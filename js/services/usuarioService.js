@@ -1,8 +1,8 @@
-const API_URL = "http://localhost:8080/api/usuarios";
+const API_URL = "https://siptec-1744e9407a56.herokuapp.com/api/usuarios";
 
 export async function obtenerUsuarios() {
     try {
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, { credentials: "include" });
 
         if (!response.ok) {
             throw new Error("Error al obtener los usuarios");
@@ -20,7 +20,7 @@ export async function obtenerUsuarios() {
 
 export async function obtenerUsuarioPorId(id) {
     try {
-        const response = await fetch(`${API_URL}/${id}`);
+        const response = await fetch(`${API_URL}/${id}`, { credentials: "include" });
 
         if (!response.ok) {
             throw new Error("Error al obtener el usuario con ID: " + id);
@@ -38,6 +38,7 @@ export async function obtenerUsuarioPorId(id) {
 export async function agregarUsuario(usuario) {
     try {
         const response = await fetch(API_URL, {
+            credentials: "include",
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -60,6 +61,7 @@ export async function agregarUsuario(usuario) {
 export async function actualizarUsuario(id, usuario) {
     try {
         const response = await fetch(`${API_URL}/${id}`, {
+            credentials: "include",
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
@@ -82,6 +84,7 @@ export async function actualizarUsuario(id, usuario) {
 export async function eliminarUsuario(id) {
     try {
         const response = await fetch(`${API_URL}/${id}`, {
+            credentials: "include",
             method: "DELETE"
         });
 

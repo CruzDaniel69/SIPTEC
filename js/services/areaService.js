@@ -1,9 +1,9 @@
-const API_URL = "http://localhost:8080/api/area";
+const API_URL = "https://siptec-1744e9407a56.herokuapp.com/api/area";
 
 
 export async function obtenerAreas() {
     try {
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, { credentials: "include" });
 
         if (!response.ok) {
             throw new Error("Error al obtener las areas");
@@ -21,7 +21,7 @@ export async function obtenerAreas() {
 
 export async function obtenerAreaPorId(id) {
     try {
-        const response = await fetch(`${API_URL}/${id}`);
+        const response = await fetch(`${API_URL}/${id}`, { credentials: "include" });
 
         if (!response.ok) {
             throw new Error("Error al obtener el area con ID: " + id);
@@ -40,6 +40,7 @@ export async function obtenerAreaPorId(id) {
 export async function agregarArea(area) {
     try {
         const response = await fetch(API_URL, {
+            credentials: "include",
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -62,6 +63,7 @@ export async function agregarArea(area) {
 export async function actualizarArea(id, area) {
     try {
         const response = await fetch(`${API_URL}/${id}`, {
+            credentials: "include",
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
@@ -84,6 +86,7 @@ export async function actualizarArea(id, area) {
 export async function eliminarArea(id) {
     try {
         const response = await fetch(`${API_URL}/${id}`, {
+            credentials: "include",
             method: "DELETE"
         });
 

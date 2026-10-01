@@ -1,8 +1,8 @@
-const API_URL = "http://localhost:8080/api/permisos";
+const API_URL = "https://siptec-1744e9407a56.herokuapp.com/api/permisos";
 
 export async function obtenerPermisos() {
     try {
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, { credentials: "include" });
 
         if (!response.ok) {
             throw new Error("Error al obtener los permisos");
@@ -20,6 +20,7 @@ export async function obtenerPermisos() {
 export async function agregarPermiso(permiso) {
     try {
         const response = await fetch(API_URL, {
+            credentials: "include",
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -42,6 +43,7 @@ export async function agregarPermiso(permiso) {
 export async function actualizarPermiso(id, permiso) {
     try {
         const response = await fetch(`${API_URL}/${id}`, {
+            credentials: "include",
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
@@ -64,6 +66,7 @@ export async function actualizarPermiso(id, permiso) {
 export async function eliminarPermiso(id) {
     try {
         const response = await fetch(`${API_URL}/${id}`, {
+            credentials: "include",
             method: "DELETE"
         });
 

@@ -31,7 +31,29 @@
     </div>
   </div>
 
-  <div class="panel-generados" id="reportesGeneradosGrid">
-    <p class="atenuado">Cargando equipos dañados...</p>
+  <div class="panel-generados">
+    <div class="barra-seleccion-reportes">
+      <button type="button" class="btn btn-outline-primary btn-sm" id="btnModoSeleccionReportes">
+        <i class="bi bi-check2-square"></i> Seleccionar
+      </button>
+      <div class="d-none align-items-center gap-2" id="accionesSeleccionReportes">
+        <span class="atenuado" id="contadorSeleccionReportes">0 seleccionados</span>
+        <div class="dropdown">
+          <button class="btn btn-success btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-download"></i> Exportar seleccionados
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><button class="dropdown-item" type="button" data-export-seleccion="txt">TXT</button></li>
+            <li><button class="dropdown-item" type="button" data-export-seleccion="pdf">PDF</button></li>
+            <li><button class="dropdown-item" type="button" data-export-seleccion="csv">CSV</button></li>
+          </ul>
+        </div>
+        <button type="button" class="btn btn-outline-secondary btn-sm" id="btnCancelarSeleccionReportes">Cancelar</button>
+      </div>
+    </div>
+
+    <div id="reportesGeneradosGrid">
+      <p class="atenuado">Cargando equipos dañados...</p>
+    </div>
   </div>
 </div>

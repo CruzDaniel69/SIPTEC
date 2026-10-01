@@ -1,8 +1,8 @@
-const API_URL = "http://localhost:8080/api/detallePrestamoHerramienta";
+const API_URL = "https://siptec-1744e9407a56.herokuapp.com/api/detallePrestamoHerramienta";
 
 export async function obtenerDetallePrestamoHerramientas() {
     try {
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, { credentials: "include" });
 
         if (!response.ok) {
             throw new Error("Error al obtener los detalles de prestamo-herramienta");
@@ -19,7 +19,7 @@ export async function obtenerDetallePrestamoHerramientas() {
 
 export async function obtenerDetallePrestamoHerramientaPorId(id) {
     try {
-        const response = await fetch(`${API_URL}/${id}`);
+        const response = await fetch(`${API_URL}/${id}`, { credentials: "include" });
 
         if (!response.ok) {
             throw new Error("Error al obtener el detalle de prestamo-herramienta con ID: " + id);
@@ -37,6 +37,7 @@ export async function obtenerDetallePrestamoHerramientaPorId(id) {
 export async function agregarDetallePrestamoHerramienta(detallePrestamoHerramienta) {
     try {
         const response = await fetch(API_URL, {
+            credentials: "include",
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -59,6 +60,7 @@ export async function agregarDetallePrestamoHerramienta(detallePrestamoHerramien
 export async function actualizarDetallePrestamoHerramienta(id, detallePrestamoHerramienta) {
     try {
         const response = await fetch(`${API_URL}/${id}`, {
+            credentials: "include",
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
@@ -81,6 +83,7 @@ export async function actualizarDetallePrestamoHerramienta(id, detallePrestamoHe
 export async function eliminarDetallePrestamoHerramienta(id) {
     try {
         const response = await fetch(`${API_URL}/${id}`, {
+            credentials: "include",
             method: "DELETE"
         });
 

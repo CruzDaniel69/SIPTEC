@@ -7,6 +7,7 @@ import { obtenerDetallePrestamoHerramientas } from "../services/detallePrestamoH
 import { obtenerAreas } from "../services/areaService.js";
 import { obtenerDetallePrestamoAreas } from "../services/detallePrestamoAreaService.js";
 import { obtenerEstadosHerramienta } from "../services/estadoHerramientaService.js";
+import { puedeGestionar } from "../utils/rol.js";
 
 const cache = {
     prestamos: [], estados: [], usuarios: [], herramientas: [], detallesHerramienta: [],
@@ -191,6 +192,7 @@ function pintarDevoluciones() {
     }
 
     const hoy = new Date().toISOString().split("T")[0];
+    const puedeRegistrarDevolucion = puedeGestionar(["ADMINISTRADOR", "IT"]);
 
     grid.innerHTML = filas.map((fila) => {
         const retrasado = fila.fechaEsperada && fila.fechaEsperada < hoy;
@@ -202,18 +204,24 @@ function pintarDevoluciones() {
             </div>
             <h4>${fila.nombreUsuario}</h4>
             <div class="tool-line"><i class="bi bi-box-seam"></i>${fila.productoArea}${fila.cantidad ? ` (x${fila.cantidad})` : ""}</div>
+            ${puedeRegistrarDevolucion ? `
             <div class="card-actions">
                 <button type="button" class="boton-pastilla boton-solido-verde" data-devolver="${fila.id}"><i class="bi bi-check-lg"></i>Devuelto</button>
                 <button type="button" class="boton-pastilla boton-solido-naranja" data-bs-toggle="modal" data-bs-target="#damageReportModal"
                     data-prestamo="${fila.id}" data-resumen="${fila.productoArea} — ${fila.nombreUsuario}">
                     <i class="bi bi-exclamation-triangle"></i>Reportar daño
                 </button>
-            </div>
+            </div>` : '<p class="atenuado" style="margin:8px 0 0; font-size:12px;">Solo un administrador o IT puede registrar esta devolución.</p>'}
         </div>`;
     }).join("");
 }
 
 async function marcarDevuelto(idPrestamo, idEstadoHerramientaDestino) {
+    if (!puedeGestionar(["ADMINISTRADOR", "IT"])) {
+        Swal.fire({ icon: "warning", title: "Acción no permitida", text: "Tu rol no tiene permiso para registrar devoluciones." });
+        return;
+    }
+
     const fila = construirFilas().find((f) => f.id === idPrestamo);
     if (!fila) return;
 

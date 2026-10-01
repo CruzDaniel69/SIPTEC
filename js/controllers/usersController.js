@@ -100,8 +100,8 @@ function initModalCrear() {
             Swal.fire({ icon: "warning", title: "Correo inválido", text: "Ingresa un correo electrónico válido." });
             return;
         }
-        if (!password || password.length < 4) {
-            Swal.fire({ icon: "warning", title: "Contraseña muy corta", text: "La contraseña debe tener al menos 4 caracteres." });
+        if (!password || password.length < 8 || !/\d/.test(password)) {
+            Swal.fire({ icon: "warning", title: "Contraseña inválida", text: "La contraseña debe tener al menos 8 caracteres e incluir al menos un número." });
             return;
         }
         if (cache.usuarios.some((u) => u.correoUsuario.toLowerCase() === correo.toLowerCase())) {
@@ -170,8 +170,8 @@ function initModalEditar() {
             Swal.fire({ icon: "warning", title: "Correo inválido", text: "Ingresa un correo electrónico válido." });
             return;
         }
-        if (password && password.length < 4) {
-            Swal.fire({ icon: "warning", title: "Contraseña muy corta", text: "La contraseña debe tener al menos 4 caracteres." });
+        if (password && (password.length < 8 || !/\d/.test(password))) {
+            Swal.fire({ icon: "warning", title: "Contraseña inválida", text: "La contraseña debe tener al menos 8 caracteres e incluir al menos un número." });
             return;
         }
 

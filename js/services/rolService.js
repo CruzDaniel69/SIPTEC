@@ -1,8 +1,8 @@
-const API_URL = "http://localhost:8080/api/roles";
+const API_URL = "https://siptec-1744e9407a56.herokuapp.com/api/roles";
 
 export async function obtenerRoles() {
     try {
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, { credentials: "include" });
 
         if (!response.ok) {
             throw new Error("Error al obtener los roles");
@@ -21,6 +21,7 @@ export async function obtenerRoles() {
 export async function agregarRol(rol) {
     try {
         const response = await fetch(API_URL, {
+            credentials: "include",
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -43,6 +44,7 @@ export async function agregarRol(rol) {
 export async function actualizarRol(id, rol) {
     try {
         const response = await fetch(`${API_URL}/${id}`, {
+            credentials: "include",
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
@@ -65,6 +67,7 @@ export async function actualizarRol(id, rol) {
 export async function eliminarRol(id) {
     try {
         const response = await fetch(`${API_URL}/${id}`, {
+            credentials: "include",
             method: "DELETE"
         });
 

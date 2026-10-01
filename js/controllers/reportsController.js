@@ -14,6 +14,8 @@ const cache = {
     detallesPrestamoHerramienta: [], areas: [], detallesPrestamoArea: [], estadosHerramienta: [],
 };
 let modalListo = false;
+let modoSeleccion = false;
+let seleccionados = new Set();
 
 function codigoPrestamo(id) {
     return "PR-" + String(id).padStart(3, "0");
@@ -114,7 +116,8 @@ function pintarGenerados() {
     const puedeResolver = puedeGestionar(["ADMINISTRADOR", "IT"]);
 
     grid.innerHTML = items.map(({ detalle, nombre }) => `
-        <div class="tarjeta-devolucion">
+        <div class="tarjeta-devolucion ${modoSeleccion ? "seleccionable" : ""} ${seleccionados.has(detalle.idDetalle) ? "seleccionada" : ""}" data-iddetalle="${detalle.idDetalle}">
+            <input type="checkbox" class="check-seleccion-reporte" data-check-item="${detalle.idDetalle}" ${seleccionados.has(detalle.idDetalle) ? "checked" : ""}>
             <div class="top-row">
                 <h4 style="margin:0;">Daño reportado: ${nombre}</h4>
                 <span class="estado daniado">Daño</span>
@@ -239,11 +242,109 @@ function initModalVisor() {
     });
 }
 
+function actualizarContadorSeleccion() {
+    const contador = document.getElementById("contadorSeleccionReportes");
+    if (contador) contador.textContent = `${seleccionados.size} seleccionados`;
+}
+
+function alternarSeleccion(idDetalle, marcado) {
+    const tarjeta = document.querySelector(`.tarjeta-devolucion[data-iddetalle="${idDetalle}"]`);
+    if (marcado) {
+        seleccionados.add(idDetalle);
+        if (tarjeta) tarjeta.classList.add("seleccionada");
+    } else {
+        seleccionados.delete(idDetalle);
+        if (tarjeta) tarjeta.classList.remove("seleccionada");
+    }
+    actualizarContadorSeleccion();
+}
+
+function exportarSeleccionados(formato) {
+    if (seleccionados.size === 0) {
+        Swal.fire({ icon: "warning", title: "Selecciona al menos un reporte", text: "Marca uno o varios reportes de daño para exportarlos juntos." });
+        return;
+    }
+
+    const items = itemsDanados().filter(({ detalle }) => seleccionados.has(detalle.idDetalle));
+    const contenido = items.map(({ detalle, nombre }) => contenidoReporte(detalle, nombre)).join("\n\n---\n\n");
+
+    if (formato === "txt") {
+        descargarArchivo("reportes-danios.txt", contenido, "text/plain");
+    } else if (formato === "csv") {
+        const filasCsv = items.map(({ detalle, nombre }) => `"${nombre}","${detalle.codInv}","DAÑADO"`).join("\n");
+        descargarArchivo("reportes-danios.csv", "Equipo,Código,Estado\n" + filasCsv, "text/csv");
+    } else if (formato === "pdf") {
+        const ventana = window.open("", "_blank");
+        if (ventana) {
+            ventana.document.write(`<pre>${contenido}</pre>`);
+            ventana.document.close();
+            ventana.focus();
+            ventana.print();
+        }
+    }
+}
+
+function initBarraSeleccion() {
+    const btnModo = document.getElementById("btnModoSeleccionReportes");
+    const acciones = document.getElementById("accionesSeleccionReportes");
+    const btnCancelar = document.getElementById("btnCancelarSeleccionReportes");
+    if (!btnModo) return;
+
+    function salirModoSeleccion() {
+        modoSeleccion = false;
+        seleccionados = new Set();
+        if (acciones) {
+            acciones.classList.add("d-none");
+            acciones.classList.remove("d-flex");
+        }
+        btnModo.classList.remove("d-none");
+        pintarGenerados();
+    }
+
+    function entrarModoSeleccion() {
+        modoSeleccion = true;
+        seleccionados = new Set();
+        if (acciones) {
+            acciones.classList.remove("d-none");
+            acciones.classList.add("d-flex");
+        }
+        btnModo.classList.add("d-none");
+        actualizarContadorSeleccion();
+        pintarGenerados();
+    }
+
+    btnModo.addEventListener("click", entrarModoSeleccion);
+    if (btnCancelar) btnCancelar.addEventListener("click", salirModoSeleccion);
+
+    document.querySelectorAll("[data-export-seleccion]").forEach((boton) => {
+        boton.addEventListener("click", () => exportarSeleccionados(boton.dataset.exportSeleccion));
+    });
+}
+
 function initEventosGrid() {
     const grid = document.getElementById("reportesGeneradosGrid");
     if (!grid) return;
 
+    grid.addEventListener("change", (evento) => {
+        const check = evento.target.closest(".check-seleccion-reporte");
+        if (!check) return;
+        alternarSeleccion(Number(check.dataset.checkItem), check.checked);
+    });
+
     grid.addEventListener("click", (evento) => {
+        const tarjeta = evento.target.closest(".tarjeta-devolucion");
+        const esCheckbox = evento.target.closest(".check-seleccion-reporte");
+        const esAccion = evento.target.closest(".card-actions");
+
+        if (modoSeleccion && tarjeta && !esCheckbox && !esAccion) {
+            const check = tarjeta.querySelector(".check-seleccion-reporte");
+            if (check) {
+                check.checked = !check.checked;
+                check.dispatchEvent(new Event("change", { bubbles: true }));
+            }
+            return;
+        }
+
         const verBtn = evento.target.closest("[data-ver-danio]");
         const exportBtn = evento.target.closest("[data-export]");
         const resolverBtn = evento.target.closest("[data-resolver]");
@@ -279,12 +380,16 @@ async function renderReportsView() {
     const tbody = document.getElementById("reportesHistorialBody");
     if (!tbody) return;
 
+    modoSeleccion = false;
+    seleccionados = new Set();
+
     try {
         await cargarCatalogos();
         pintarHistorial();
         pintarGenerados();
         initModalVisor();
         initEventosGrid();
+        initBarraSeleccion();
     } catch (error) {
         console.error(error);
         tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">No se pudieron cargar los reportes. Revisa tu conexión con el servidor.</td></tr>';

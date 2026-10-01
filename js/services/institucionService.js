@@ -1,8 +1,8 @@
-const API_URL = "http://localhost:8080/api/instituciones";
+const API_URL = "https://siptec-1744e9407a56.herokuapp.com/api/instituciones";
 
 export async function obtenerInstituciones() {
     try {
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, { credentials: "include" });
 
         if (!response.ok) {
             throw new Error("Error al obtener las instituciones");
@@ -21,6 +21,7 @@ export async function obtenerInstituciones() {
 export async function agregarInstitucion(institucion) {
     try {
         const response = await fetch(API_URL, {
+            credentials: "include",
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -43,6 +44,7 @@ export async function agregarInstitucion(institucion) {
 export async function actualizarInstitucion(id, institucion) {
     try {
         const response = await fetch(`${API_URL}/${id}`, {
+            credentials: "include",
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
@@ -65,6 +67,7 @@ export async function actualizarInstitucion(id, institucion) {
 export async function eliminarInstitucion(id) {
     try {
         const response = await fetch(`${API_URL}/${id}`, {
+            credentials: "include",
             method: "DELETE"
         });
 

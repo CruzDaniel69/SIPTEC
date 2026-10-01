@@ -1,8 +1,8 @@
-const API_URL = "http://localhost:8080/api/herramientas";
+const API_URL = "https://siptec-1744e9407a56.herokuapp.com/api/herramientas";
 
 export async function obtenerHerramientas() {
     try {
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, { credentials: "include" });
 
         if (!response.ok) {
             throw new Error("Error al obtener las herramientas");
@@ -20,7 +20,7 @@ export async function obtenerHerramientas() {
 
 export async function obtenerHerramientaPorId(id) {
     try {
-        const response = await fetch(`${API_URL}/${id}`);
+        const response = await fetch(`${API_URL}/${id}`, { credentials: "include" });
 
         if (!response.ok) {
             throw new Error("Error al obtener la herramienta con ID: " + id);
@@ -39,6 +39,7 @@ export async function obtenerHerramientaPorId(id) {
 export async function agregarHerramienta(herramienta) {
     try {
         const response = await fetch(API_URL, {
+            credentials: "include",
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -61,6 +62,7 @@ export async function agregarHerramienta(herramienta) {
 export async function actualizarHerramienta(id, herramienta) {
     try {
         const response = await fetch(`${API_URL}/${id}`, {
+            credentials: "include",
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
@@ -83,6 +85,7 @@ export async function actualizarHerramienta(id, herramienta) {
 export async function eliminarHerramienta(id) {
     try {
         const response = await fetch(`${API_URL}/${id}`, {
+            credentials: "include",
             method: "DELETE"
         });
 

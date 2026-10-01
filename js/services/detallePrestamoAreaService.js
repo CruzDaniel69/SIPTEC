@@ -1,8 +1,8 @@
-const API_URL = "http://localhost:8080/api/detallePrestamoArea";
+const API_URL = "https://siptec-1744e9407a56.herokuapp.com/api/detallePrestamoArea";
 
 export async function obtenerDetallePrestamoAreas() {
     try {
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, { credentials: "include" });
 
         if (!response.ok) {
             throw new Error("Error al obtener las relaciones prestamo-area");
@@ -20,7 +20,7 @@ export async function obtenerDetallePrestamoAreas() {
 
 export async function obtenerDetallePrestamoAreaPorId(idArea, idPrestamo) {
     try {
-        const response = await fetch(`${API_URL}/${idArea}/${idPrestamo}`);
+        const response = await fetch(`${API_URL}/${idArea}/${idPrestamo}`, { credentials: "include" });
 
         if (!response.ok) {
             throw new Error("Error al obtener la relacion prestamo-area con ID: " + idArea + "-" + idPrestamo);
@@ -38,7 +38,7 @@ export async function obtenerDetallePrestamoAreaPorId(idArea, idPrestamo) {
 
 export async function obtenerAreasPorPrestamo(idPrestamo) {
     try {
-        const response = await fetch(`${API_URL}/prestamo/${idPrestamo}`);
+        const response = await fetch(`${API_URL}/prestamo/${idPrestamo}`, { credentials: "include" });
 
         if (!response.ok) {
             throw new Error("Error al obtener las areas del prestamo con ID: " + idPrestamo);
@@ -56,6 +56,7 @@ export async function obtenerAreasPorPrestamo(idPrestamo) {
 export async function agregarDetallePrestamoArea(detallePrestamoArea) {
     try {
         const response = await fetch(API_URL, {
+            credentials: "include",
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -78,6 +79,7 @@ export async function agregarDetallePrestamoArea(detallePrestamoArea) {
 export async function eliminarDetallePrestamoArea(idArea, idPrestamo) {
     try {
         const response = await fetch(`${API_URL}/${idArea}/${idPrestamo}`, {
+            credentials: "include",
             method: "DELETE"
         });
 

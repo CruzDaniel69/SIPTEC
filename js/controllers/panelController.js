@@ -64,6 +64,17 @@ async function renderPanelView() {
         document.getElementById("statDevolucionesPendientes").textContent = cantPrestados;
         document.getElementById("statDisponibles").textContent = cantDisponibles;
 
+        const badgePendientesAprobar = document.getElementById("badgePendientesAprobar");
+        if (badgePendientesAprobar) {
+            const cantPendientesAprobar = prestamos.filter((p) => {
+                const estado = estadosPrestamo.find((e) => e.id === p.estado);
+                return estado && estado.nombreEstado === "PENDIENTE";
+            }).length;
+
+            badgePendientesAprobar.textContent = cantPendientesAprobar;
+            badgePendientesAprobar.hidden = cantPendientesAprobar === 0;
+        }
+
         const pctDisponibles = Math.round((cantDisponibles / totalDetalles) * 100);
         const pctPrestados = Math.round((cantPrestados / totalDetalles) * 100);
         const pctDanados = Math.max(0, 100 - pctDisponibles - pctPrestados);
@@ -82,7 +93,10 @@ async function renderPanelView() {
         const tbody = document.getElementById("actividadRecienteBody");
         if (tbody) {
             const recientes = prestamos
-                .slice()
+                .filter((p) => {
+                    const estado = estadosPrestamo.find((e) => e.id === p.estado);
+                    return estado && estado.nombreEstado !== "PENDIENTE";
+                })
                 .sort((a, b) => new Date(b.fechaInicio) - new Date(a.fechaInicio))
                 .slice(0, 5);
 

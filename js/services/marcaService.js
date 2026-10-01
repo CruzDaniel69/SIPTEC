@@ -1,8 +1,8 @@
-const API_URL = "http://localhost:8080/api/marca";
+const API_URL = "https://siptec-1744e9407a56.herokuapp.com/api/marca";
 
 export async function obtenerMarcas() {
     try {
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, { credentials: "include" });
 
         if (!response.ok) {
             throw new Error("Error al obtener las marcas");
@@ -19,7 +19,7 @@ export async function obtenerMarcas() {
 
 export async function obtenerMarcaPorId(id) {
     try {
-        const response = await fetch(`${API_URL}/${id}`);
+        const response = await fetch(`${API_URL}/${id}`, { credentials: "include" });
 
         if (!response.ok) {
             throw new Error("Error al obtener la marca con ID: " + id);
@@ -37,6 +37,7 @@ export async function obtenerMarcaPorId(id) {
 export async function agregarMarca(marca) {
     try {
         const response = await fetch(API_URL, {
+            credentials: "include",
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -59,6 +60,7 @@ export async function agregarMarca(marca) {
 export async function actualizarMarca(id, marca) {
     try {
         const response = await fetch(`${API_URL}/${id}`, {
+            credentials: "include",
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
@@ -81,6 +83,7 @@ export async function actualizarMarca(id, marca) {
 export async function eliminarMarca(id) {
     try {
         const response = await fetch(`${API_URL}/${id}`, {
+            credentials: "include",
             method: "DELETE"
         });
 

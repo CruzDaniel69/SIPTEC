@@ -1,8 +1,8 @@
-const API_URL = "http://localhost:8080/api/detalle-herramienta";
+const API_URL = "https://siptec-1744e9407a56.herokuapp.com/api/detalle-herramienta";
 
 export async function obtenerDetallesHerramienta() {
     try {
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, { credentials: "include" });
 
         if (!response.ok) {
             throw new Error("Error al obtener los detalles de herramienta");
@@ -20,7 +20,7 @@ export async function obtenerDetallesHerramienta() {
 
 export async function obtenerDetalleHerramientaPorId(id) {
     try {
-        const response = await fetch(`${API_URL}/${id}`);
+        const response = await fetch(`${API_URL}/${id}`, { credentials: "include" });
 
         if (!response.ok) {
             throw new Error("Error al obtener el detalle de herramienta con ID: " + id);
@@ -38,7 +38,7 @@ export async function obtenerDetalleHerramientaPorId(id) {
 
 export async function obtenerDetallesHerramientaPorEstado(idEstado) {
     try {
-        const response = await fetch(`${API_URL}/estado/${idEstado}`);
+        const response = await fetch(`${API_URL}/estado/${idEstado}`, { credentials: "include" });
 
         if (!response.ok) {
             throw new Error("Error al obtener los detalles de herramienta con el estado: " + idEstado);
@@ -57,6 +57,7 @@ export async function obtenerDetallesHerramientaPorEstado(idEstado) {
 export async function agregarDetalleHerramienta(detalle) {
     try {
         const response = await fetch(API_URL, {
+            credentials: "include",
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -79,6 +80,7 @@ export async function agregarDetalleHerramienta(detalle) {
 export async function actualizarDetalleHerramienta(id, detalle) {
     try {
         const response = await fetch(`${API_URL}/${id}`, {
+            credentials: "include",
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
@@ -101,6 +103,7 @@ export async function actualizarDetalleHerramienta(id, detalle) {
 export async function eliminarDetalleHerramienta(id) {
     try {
         const response = await fetch(`${API_URL}/${id}`, {
+            credentials: "include",
             method: "DELETE"
         });
 

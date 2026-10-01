@@ -1,8 +1,8 @@
-const API_URL = "http://localhost:8080/api/rolPermiso";
+const API_URL = "https://siptec-1744e9407a56.herokuapp.com/api/rolPermiso";
 
 export async function obtenerRolPermisos() {
     try {
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, { credentials: "include" });
 
         if (!response.ok) {
             throw new Error("Error al obtener las relaciones rol-permiso");
@@ -20,7 +20,7 @@ export async function obtenerRolPermisos() {
 
 export async function obtenerRolPermisoPorIdRol(idRol) {
     try {
-        const response = await fetch(`${API_URL}/${idRol}`);
+        const response = await fetch(`${API_URL}/${idRol}`, { credentials: "include" });
 
         if (!response.ok) {
             throw new Error("Error al obtener la relacion rol-permiso con idRol: " + idRol);
@@ -39,6 +39,7 @@ export async function obtenerRolPermisoPorIdRol(idRol) {
 export async function agregarRolPermiso(rolPermiso) {
     try {
         const response = await fetch(API_URL, {
+            credentials: "include",
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -61,6 +62,7 @@ export async function agregarRolPermiso(rolPermiso) {
 export async function eliminarRolPermisoPorIdRol(idRol) {
     try {
         const response = await fetch(`${API_URL}/${idRol}`, {
+            credentials: "include",
             method: "DELETE"
         });
 

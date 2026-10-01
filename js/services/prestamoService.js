@@ -1,8 +1,8 @@
-const API_URL = "http://localhost:8080/api/prestamo";
+const API_URL = "https://siptec-1744e9407a56.herokuapp.com/api/prestamo";
 
 export async function obtenerPrestamos() {
     try {
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, { credentials: "include" });
 
         if (!response.ok) {
             throw new Error("Error al obtener los prestamos");
@@ -20,7 +20,7 @@ export async function obtenerPrestamos() {
 
 export async function obtenerPrestamoPorId(id) {
     try {
-        const response = await fetch(`${API_URL}/${id}`);
+        const response = await fetch(`${API_URL}/${id}`, { credentials: "include" });
 
         if (!response.ok) {
             throw new Error("Error al obtener el prestamo con ID: " + id);
@@ -38,6 +38,7 @@ export async function obtenerPrestamoPorId(id) {
 export async function agregarPrestamo(prestamo) {
     try {
         const response = await fetch(API_URL, {
+            credentials: "include",
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -60,6 +61,7 @@ export async function agregarPrestamo(prestamo) {
 export async function actualizarPrestamo(id, prestamo) {
     try {
         const response = await fetch(`${API_URL}/${id}`, {
+            credentials: "include",
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
@@ -82,6 +84,7 @@ export async function actualizarPrestamo(id, prestamo) {
 export async function eliminarPrestamo(id) {
     try {
         const response = await fetch(`${API_URL}/${id}`, {
+            credentials: "include",
             method: "DELETE"
         });
 

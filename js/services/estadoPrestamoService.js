@@ -1,8 +1,8 @@
-const API_URL = "http://localhost:8080/api/estado";
+const API_URL = "https://siptec-1744e9407a56.herokuapp.com/api/estado";
 
 export async function obtenerEstadosPrestamo() {
     try {
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, { credentials: "include" });
 
         if (!response.ok) {
             throw new Error("Error al obtener los estados de prestamo");
@@ -20,6 +20,7 @@ export async function obtenerEstadosPrestamo() {
 export async function agregarEstadoPrestamo(estadoPrestamo) {
     try {
         const response = await fetch(API_URL, {
+            credentials: "include",
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -42,6 +43,7 @@ export async function agregarEstadoPrestamo(estadoPrestamo) {
 export async function actualizarEstadoPrestamo(id, estadoPrestamo) {
     try {
         const response = await fetch(`${API_URL}/${id}`, {
+            credentials: "include",
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
@@ -64,6 +66,7 @@ export async function actualizarEstadoPrestamo(id, estadoPrestamo) {
 export async function eliminarEstadoPrestamo(id) {
     try {
         const response = await fetch(`${API_URL}/${id}`, {
+            credentials: "include",
             method: "DELETE"
         });
 

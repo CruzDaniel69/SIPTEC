@@ -1,8 +1,8 @@
-const API_URL = "http://localhost:8080/api/estadoHerramienta";
+const API_URL = "https://siptec-1744e9407a56.herokuapp.com/api/estadoHerramienta";
 
 export async function obtenerEstadosHerramienta() {
     try {
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, { credentials: "include" });
 
         if (!response.ok) {
             throw new Error("Error al obtener los estados de herramienta");
@@ -19,7 +19,7 @@ export async function obtenerEstadosHerramienta() {
 
 export async function obtenerEstadoHerramientaPorId(id) {
     try {
-        const response = await fetch(`${API_URL}/${id}`);
+        const response = await fetch(`${API_URL}/${id}`, { credentials: "include" });
 
         if (!response.ok) {
             throw new Error("Error al obtener el estado de herramienta con ID: " + id);
@@ -37,6 +37,7 @@ export async function obtenerEstadoHerramientaPorId(id) {
 export async function agregarEstadoHerramienta(estadoHerramienta) {
     try {
         const response = await fetch(API_URL, {
+            credentials: "include",
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -59,6 +60,7 @@ export async function agregarEstadoHerramienta(estadoHerramienta) {
 export async function actualizarEstadoHerramienta(id, estadoHerramienta) {
     try {
         const response = await fetch(`${API_URL}/${id}`, {
+            credentials: "include",
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
@@ -81,6 +83,7 @@ export async function actualizarEstadoHerramienta(id, estadoHerramienta) {
 export async function eliminarEstadoHerramienta(id) {
     try {
         const response = await fetch(`${API_URL}/${id}`, {
+            credentials: "include",
             method: "DELETE"
         });
 

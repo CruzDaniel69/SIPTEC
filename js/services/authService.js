@@ -1,8 +1,9 @@
-const API_URL = "http://localhost:8081/api/auth";
+const API_URL = "https://siptec-1744e9407a56.herokuapp.com/api/auth";
 
 export async function iniciarSesion(correo, clave) {
     try {
         const response = await fetch(`${API_URL}/login`, {
+            credentials: "include",
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

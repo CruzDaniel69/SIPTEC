@@ -21,7 +21,9 @@
         <img src="../img/iconInventario.png" alt=""><span>Herramientas/Áreas</span>
       </button>
       <button class="nav-item" data-view="loans" title="Préstamos" data-roles="ADMINISTRADOR,EMPLEADO">
-        <img src="../img/iconPrestamo.png" alt=""><span>Préstamos</span>
+        <img src="../img/iconPrestamo.png" alt="">
+        <span id="badgePendientesAprobar" class="badge-mini badge-nav" hidden>0</span>
+        <span>Préstamos</span>
       </button>
       <button class="nav-item" data-view="users" title="Usuarios" data-roles="ADMINISTRADOR">
         <img src="../img/iconUsuario.png" alt=""><span>Usuarios</span>
@@ -58,7 +60,7 @@
         <div class="modal-body row g-3">
           <div class="col-6">
             <label class="form-label" for="itemCode">Código</label>
-            <input id="itemCode" class="form-control" required>
+            <input id="itemCode" class="form-control" placeholder="Ej. TAL-002" required>
           </div>
           <div class="col-6">
             <label class="form-label" for="itemCategory">Categoría</label>
@@ -67,7 +69,7 @@
           </div>
           <div class="col-12">
             <label class="form-label" for="itemName">Nombre</label>
-            <input id="itemName" class="form-control" required>
+            <input id="itemName" class="form-control" placeholder="Escribe el nombre del equipo" required>
           </div>
           <div class="col-6">
             <label class="form-label" for="itemBrand">Marca</label>
@@ -76,7 +78,7 @@
           </div>
           <div class="col-6">
             <label class="form-label" for="itemStock">Stock</label>
-            <input id="itemStock" class="form-control" type="number" min="1" required>
+            <input id="itemStock" class="form-control" type="number" min="1" placeholder="Ej. 5" required>
           </div>
           <div class="col-12">
             <label class="form-label" for="itemLocation">Ubicación</label>
@@ -214,15 +216,15 @@
         <div class="modal-body row g-3">
           <div class="col-md-6">
             <label class="form-label" for="userFirstName">Nombre</label>
-            <input id="userFirstName" class="form-control" required>
+            <input id="userFirstName" class="form-control" placeholder="Escribe el nombre" required>
           </div>
           <div class="col-md-6">
             <label class="form-label" for="userLastName">Apellido</label>
-            <input id="userLastName" class="form-control" required>
+            <input id="userLastName" class="form-control" placeholder="Escribe el apellido" required>
           </div>
           <div class="col-12">
             <label class="form-label" for="userEmail">Correo electrónico</label>
-            <input id="userEmail" class="form-control" type="email" required>
+            <input id="userEmail" class="form-control" type="email" placeholder="ejemplo@ricaldone.edu.sv" required>
           </div>
           <div class="col-md-6">
             <label class="form-label" for="userRole">Rol</label>
@@ -241,7 +243,7 @@
           </div>
           <div class="col-12">
             <label class="form-label" for="userPassword">Contraseña</label>
-            <input id="userPassword" class="form-control" type="password" minlength="4" required>
+            <input id="userPassword" class="form-control" type="password" minlength="8" pattern="(?=.*[0-9]).{8,}" title="Mínimo 8 caracteres e incluir al menos un número" placeholder="Mínimo 8 caracteres, incluye un número" required>
           </div>
         </div>
         <div class="modal-footer">
@@ -290,7 +292,7 @@
           </div>
           <div class="col-12">
             <label class="form-label" for="editUserPassword">Nueva Contraseña</label>
-            <input id="editUserPassword" class="form-control" type="password" minlength="4" placeholder="Dejar vacío para conservarla">
+            <input id="editUserPassword" class="form-control" type="password" minlength="8" pattern="(?=.*[0-9]).{8,}" title="Mínimo 8 caracteres e incluir al menos un número" placeholder="Dejar vacío para conservarla (mín. 8 y un número)">
           </div>
         </div>
         <div class="modal-footer">
