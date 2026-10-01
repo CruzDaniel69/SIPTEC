@@ -8,9 +8,9 @@ export async function obtenerDetallesHerramienta() {
             throw new Error("Error al obtener los detalles de herramienta");
         }
 
-        const detalles = await response.json();
+        const resultado = await response.json();
 
-        return detalles;
+        return resultado.data;
     }
     catch (error) {
         console.error("Error al obtener los detalles de herramienta: " + error);
@@ -26,9 +26,9 @@ export async function obtenerDetalleHerramientaPorId(id) {
             throw new Error("Error al obtener el detalle de herramienta con ID: " + id);
         }
 
-        const detalle = await response.json();
+        const resultado = await response.json();
 
-        return detalle;
+        return resultado.data;
     }
     catch (error) {
         console.error("Error al obtener el detalle de herramienta por ID: " + error);
@@ -68,8 +68,8 @@ export async function agregarDetalleHerramienta(detalle) {
         if (!response.ok) {
             throw new Error("Error al agregar el registro: " + response.status);
         }
-        const nuevoDetalle = await response.json();
-        return nuevoDetalle;
+        const resultado = await response.json();
+        return resultado.data;
     }
     catch (error) {
         console.error("Error al agregar el registro: " + error);
@@ -91,8 +91,8 @@ export async function actualizarDetalleHerramienta(id, detalle) {
         if (!response.ok) {
             throw new Error("Error al actualizar el registro: " + response.status);
         }
-        const detalleActualizado = await response.json();
-        return detalleActualizado;
+        const resultado = await response.json();
+        return resultado.data;
     }
     catch (error) {
         console.error("Error al actualizar el registro: " + error);
