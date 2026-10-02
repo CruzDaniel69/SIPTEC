@@ -111,7 +111,7 @@ function pintarTabla() {
 
     const filas = filasFiltradas();
     const puedeGestionarAqui = puedeGestionarInventario();
-    const totalColumnas = puedeGestionarAqui ? 8 : 7;
+    const totalColumnas = puedeGestionarAqui ? 7 : 6;
 
     if (filas.length === 0) {
         tbody.innerHTML = `<tr><td colspan="${totalColumnas}" class="text-center atenuado">No se encontraron herramientas.</td></tr>`;
@@ -124,7 +124,6 @@ function pintarTabla() {
             <td class="nombre-elemento"><span class="icono-elemento"><i class="bi bi-tools"></i></span>${fila.nombre}</td>
             <td>${fila.nombreMarca}</td>
             <td>${fila.nombreCategoria}</td>
-            <td>${fila.stock}</td>
             <td>${fila.nombreArea}</td>
             <td><span class="estado ${claseEstado(fila.nombreEstado)}">${fila.nombreEstado}</span></td>
             ${puedeGestionarAqui ? `
@@ -143,12 +142,6 @@ function pintarTabla() {
             </td>` : ""}
         </tr>
     `).join("");
-}
-
-function poblarSelect(select, lista, campoNombre, valorSeleccionado) {
-    if (!select) return;
-    select.innerHTML = '<option value="" disabled' + (valorSeleccionado ? "" : " selected") + '>Selecciona una opción</option>' +
-        lista.map((item) => `<option value="${item.id}" ${String(item.id) === String(valorSeleccionado) ? "selected" : ""}>${item[campoNombre]}</option>`).join("");
 }
 
 async function resolverTipoArea(nombre) {
@@ -171,9 +164,13 @@ function poblarSelectConAgregar(select, lista, campoNombre, valorSeleccionado, e
     ).join("");
     select.innerHTML = '<option value="" disabled' + (valorSeleccionado ? "" : " selected") + '>Selecciona una opción</option>' +
         opciones +
-        `<option value="__nuevo__">+ ${etiquetaAgregar}</option>`;
+        (etiquetaAgregar ? `<option value="__nuevo__">+ ${etiquetaAgregar}</option>` : "");
 
     if (select.dataset.personalizado) pintarSelectPersonalizado(select);
+}
+
+function refrescarSelect(select) {
+    if (select && select.dataset.personalizado) pintarSelectPersonalizado(select);
 }
 
 function pintarSelectPersonalizado(select) {
@@ -183,22 +180,28 @@ function pintarSelectPersonalizado(select) {
         contenedor.className = "dropdown select-personalizado";
         select.insertAdjacentElement("afterend", contenedor);
         select.classList.add("d-none");
+        select.required = false;
         select._contenedorPersonalizado = contenedor;
     }
 
     const config = select._config;
     const opciones = Array.from(select.options).filter((o) => o.value !== "");
     const seleccionada = select.selectedOptions[0];
-    const textoBoton = seleccionada && seleccionada.value !== "" && seleccionada.value !== "__nuevo__" ? seleccionada.textContent : "Selecciona una opción";
+    const hayValor = seleccionada && seleccionada.value !== "" && seleccionada.value !== "__nuevo__";
+    const textoBoton = hayValor ? seleccionada.textContent : "Selecciona una opción";
 
     contenedor.innerHTML = "";
 
     const boton = document.createElement("button");
     boton.type = "button";
-    boton.className = "form-select";
+    boton.className = "selector-boton" + (hayValor ? "" : " sin-valor");
+    boton.disabled = select.disabled;
     boton.setAttribute("data-bs-toggle", "dropdown");
     boton.setAttribute("aria-expanded", "false");
-    boton.textContent = textoBoton;
+
+    const textoSpan = document.createElement("span");
+    textoSpan.textContent = textoBoton;
+    boton.appendChild(textoSpan);
     contenedor.appendChild(boton);
 
     const menu = document.createElement("div");
@@ -207,6 +210,7 @@ function pintarSelectPersonalizado(select) {
     opciones.forEach((opcion) => {
         const fila = document.createElement("div");
         fila.className = "fila-opcion";
+        if (hayValor && opcion.value === select.value) fila.classList.add("activa");
 
         const nombre = document.createElement("span");
         nombre.className = "nombre-opcion";
@@ -223,6 +227,7 @@ function pintarSelectPersonalizado(select) {
             fila.addEventListener("click", () => {
                 select.value = opcion.value;
                 pintarSelectPersonalizado(select);
+                select.dispatchEvent(new Event("input"));
             });
 
             if (config && config.eliminar) {
@@ -265,13 +270,14 @@ async function eliminarOpcionPersonalizada(select, id, nombre) {
         await config.eliminar(id);
         const seleccionActual = select.value === String(id) ? "" : select.value;
         poblarSelectConAgregar(select, config.obtenerLista(), config.campoNombre, seleccionActual, config.etiquetaAgregar);
+        select.dispatchEvent(new Event("input"));
         Swal.fire({ icon: "success", title: "Eliminado", confirmButtonColor: "#28a745" });
     } catch (error) {
         console.error(error);
         Swal.fire({
             icon: "error",
             title: "No se pudo eliminar",
-            text: "Si algún equipo usa esta opción, primero cambia o elimina ese equipo.",
+            text: error.mensajeUsuario || "Si algún equipo usa esta opción, primero cambia o elimina ese equipo.",
             confirmButtonColor: "#dc3545",
         });
     }
@@ -302,7 +308,8 @@ async function manejarAgregarNuevaOpcion(config) {
         inputValidator: (value) => {
             const texto = (value || "").trim();
             if (!texto) return "Escribe un nombre.";
-            if (!patronTexto.test(texto)) return "Ese nombre tiene símbolos no permitidos.";
+            if (config.validar) return config.validar(texto);
+            if (!patronTexto.test(texto)) return "Solo se permiten letras, números, espacios y los signos . , ( ) -";
             return null;
         },
     }));
@@ -321,13 +328,115 @@ async function manejarAgregarNuevaOpcion(config) {
 function conectarSelectConAgregar(select, config) {
     if (!select) return;
     select._config = config;
-    if (config.eliminar) select.dataset.personalizado = "1";
+    select.dataset.personalizado = "1";
     select.addEventListener("change", async () => {
         if (select.value !== "__nuevo__") return;
 
         const creado = await manejarAgregarNuevaOpcion(config);
         poblarSelectConAgregar(select, config.obtenerLista(), config.campoNombre, creado ? creado.id : "", config.etiquetaAgregar);
+        select.dispatchEvent(new Event("input"));
     });
+}
+
+const PREFIJOS_BASE = ["EQ", "HE", "TAL", "LAB"];
+const CLAVE_PREFIJOS = "siptec-prefijos-inventario";
+
+function prefijosEnUso() {
+    return cache.detalles
+        .map((d) => String(d.codInv || "").split("-")[0].toUpperCase())
+        .filter(Boolean);
+}
+
+function leerPrefijosGuardados() {
+    try {
+        const guardados = JSON.parse(localStorage.getItem(CLAVE_PREFIJOS));
+        return Array.isArray(guardados) ? guardados : PREFIJOS_BASE;
+    } catch (error) {
+        return PREFIJOS_BASE;
+    }
+}
+
+function listaPrefijos() {
+    const unicos = new Set([...leerPrefijosGuardados(), ...prefijosEnUso()]);
+    return Array.from(unicos).sort().map((p) => ({ id: p, nombrePrefijo: p }));
+}
+
+function guardarPrefijos(lista) {
+    try {
+        localStorage.setItem(CLAVE_PREFIJOS, JSON.stringify(lista));
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+function configCategoria() {
+    return {
+        titulo: "Nueva categoría",
+        placeholder: "Nombre de la categoría",
+        obtenerLista: () => cache.categorias,
+        campoNombre: "nombreCategoria",
+        etiquetaAgregar: "Agregar nueva categoría",
+        crear: async (nombre) => {
+            const creada = await agregarCategoria({ nombreCategoria: nombre });
+            cache.categorias.push(creada);
+            return creada;
+        },
+        eliminar: async (id) => {
+            await eliminarCategoria(id);
+            cache.categorias = cache.categorias.filter((c) => String(c.id) !== String(id));
+        },
+    };
+}
+
+function configMarca() {
+    return {
+        titulo: "Nueva marca",
+        placeholder: "Nombre de la marca",
+        obtenerLista: () => cache.marcas,
+        campoNombre: "nombreMarca",
+        etiquetaAgregar: "Agregar nueva marca",
+        crear: async (nombre) => {
+            const creada = await agregarMarca({ nombreMarca: nombre });
+            cache.marcas.push(creada);
+            return creada;
+        },
+        eliminar: async (id) => {
+            await eliminarMarca(id);
+            cache.marcas = cache.marcas.filter((m) => String(m.id) !== String(id));
+        },
+    };
+}
+
+function configPrefijo() {
+    return {
+        titulo: "Nuevo prefijo",
+        placeholder: "Solo letras, ej. MON",
+        obtenerLista: listaPrefijos,
+        campoNombre: "nombrePrefijo",
+        etiquetaAgregar: "Agregar nuevo prefijo",
+        validar: (texto) => (/^[A-Za-z]{1,6}$/.test(texto) ? null : "El prefijo solo admite letras (A-Z), de 1 a 6 caracteres."),
+        crear: async (nombre) => {
+            const prefijo = nombre.toUpperCase();
+            guardarPrefijos(Array.from(new Set([...leerPrefijosGuardados(), prefijo])));
+            return { id: prefijo, nombrePrefijo: prefijo };
+        },
+        eliminar: async (id) => {
+            if (prefijosEnUso().includes(String(id).toUpperCase())) {
+                const error = new Error("Prefijo en uso");
+                error.mensajeUsuario = `Ya hay equipos con el prefijo ${id}. Solo se pueden quitar prefijos que no estén en uso.`;
+                throw error;
+            }
+            guardarPrefijos(leerPrefijosGuardados().filter((p) => p !== id));
+        },
+    };
+}
+
+function configUbicacion() {
+    return {
+        obtenerLista: () => cache.areas,
+        campoNombre: "nombreArea",
+        etiquetaAgregar: null,
+    };
 }
 
 function areasFiltradas() {
@@ -396,7 +505,7 @@ function initModalCrearArea() {
             return;
         }
         if (!patronTexto.test(nombre)) {
-            Swal.fire({ icon: "warning", title: "Nombre inválido", text: "El nombre del área tiene símbolos no permitidos." });
+            Swal.fire({ icon: "warning", title: "Nombre inválido", text: "El nombre del área solo admite letras, números, espacios y los signos . , ( ) -" });
             return;
         }
         if (!tipoTexto) {
@@ -404,7 +513,7 @@ function initModalCrearArea() {
             return;
         }
         if (!patronTexto.test(tipoTexto)) {
-            Swal.fire({ icon: "warning", title: "Tipo inválido", text: "El tipo de área tiene símbolos no permitidos." });
+            Swal.fire({ icon: "warning", title: "Tipo inválido", text: "El tipo de área solo admite letras, números, espacios y los signos . , ( ) -" });
             return;
         }
         if (cache.areas.some((a) => a.nombreArea.toLowerCase() === nombre.toLowerCase())) {
@@ -458,7 +567,7 @@ function initModalEditarArea() {
             return;
         }
         if (!patronTexto.test(nombre) || !patronTexto.test(tipoTexto)) {
-            Swal.fire({ icon: "warning", title: "Datos inválidos", text: "El nombre o el tipo de área tiene símbolos no permitidos." });
+            Swal.fire({ icon: "warning", title: "Datos inválidos", text: "El nombre y el tipo de área solo admiten letras, números, espacios y los signos . , ( ) -" });
             return;
         }
         if (cache.areas.some((a) => a.id !== id && a.nombreArea.toLowerCase() === nombre.toLowerCase())) {
@@ -541,57 +650,13 @@ function initModalCrear() {
     const selectMarca = document.getElementById("itemBrand");
     const selectUbicacion = document.getElementById("itemLocation");
 
-    conectarSelectConAgregar(selectCategoria, {
-        titulo: "Nueva categoría",
-        placeholder: "Nombre de la categoría",
-        obtenerLista: () => cache.categorias,
-        campoNombre: "nombreCategoria",
-        etiquetaAgregar: "Agregar nueva categoría",
-        crear: async (nombre) => {
-            const creada = await agregarCategoria({ nombreCategoria: nombre });
-            cache.categorias.push(creada);
-            return creada;
-        },
-        eliminar: async (id) => {
-            await eliminarCategoria(id);
-            cache.categorias = cache.categorias.filter((c) => String(c.id) !== String(id));
-        },
-    });
-
-    conectarSelectConAgregar(selectMarca, {
-        titulo: "Nueva marca",
-        placeholder: "Nombre de la marca",
-        obtenerLista: () => cache.marcas,
-        campoNombre: "nombreMarca",
-        etiquetaAgregar: "Agregar nueva marca",
-        crear: async (nombre) => {
-            const creada = await agregarMarca({ nombreMarca: nombre });
-            cache.marcas.push(creada);
-            return creada;
-        },
-        eliminar: async (id) => {
-            await eliminarMarca(id);
-            cache.marcas = cache.marcas.filter((m) => String(m.id) !== String(id));
-        },
-    });
-
-    conectarSelectConAgregar(selectUbicacion, {
-        titulo: "Nueva ubicación",
-        placeholder: "Nombre de la ubicación",
-        obtenerLista: () => cache.areas,
-        campoNombre: "nombreArea",
-        etiquetaAgregar: "Agregar nueva ubicación",
-        crear: async (nombre) => {
-            if (cache.tiposArea.length === 0) {
-                throw new Error("No hay tipos de área configurados en el sistema.");
-            }
-            const creada = await agregarArea({ nombreArea: nombre, tipoArea: cache.tiposArea[0].id });
-            cache.areas.push(creada);
-            return creada;
-        },
-    });
-
     const selectPrefijo = document.getElementById("itemCodePrefix");
+
+    conectarSelectConAgregar(selectCategoria, configCategoria());
+    conectarSelectConAgregar(selectMarca, configMarca());
+    conectarSelectConAgregar(selectUbicacion, configUbicacion());
+    conectarSelectConAgregar(selectPrefijo, configPrefijo());
+
     const inputNumero = document.getElementById("itemCodeNumber");
     const inputPiezas = document.getElementById("itemStock");
     const textoVistaPrevia = document.getElementById("itemCodePreview");
@@ -632,9 +697,12 @@ function initModalCrear() {
 
     itemModal.addEventListener("show.bs.modal", () => {
         form.reset();
+        const prefijos = listaPrefijos();
+        const prefijoInicial = prefijos.some((p) => p.id === "EQ") ? "EQ" : (prefijos[0] ? prefijos[0].id : "");
+        poblarSelectConAgregar(selectPrefijo, prefijos, "nombrePrefijo", prefijoInicial, "Agregar nuevo prefijo");
         poblarSelectConAgregar(selectCategoria, cache.categorias, "nombreCategoria", "", "Agregar nueva categoría");
         poblarSelectConAgregar(selectMarca, cache.marcas, "nombreMarca", "", "Agregar nueva marca");
-        poblarSelectConAgregar(selectUbicacion, cache.areas, "nombreArea", "", "Agregar nueva ubicación");
+        poblarSelectConAgregar(selectUbicacion, cache.areas, "nombreArea", "", null);
         actualizarVistaPrevia();
     });
 
@@ -647,9 +715,17 @@ function initModalCrear() {
         const stock = Number(inputPiezas.value);
         const idArea = selectUbicacion.value;
 
+        if (!selectPrefijo.value || selectPrefijo.value === "__nuevo__") {
+            Swal.fire({ icon: "warning", title: "Código inválido", text: "Selecciona un prefijo para el código." });
+            return;
+        }
         const numeroInicial = Number(inputNumero.value);
         if (!Number.isInteger(numeroInicial) || numeroInicial < 1) {
             Swal.fire({ icon: "warning", title: "Código inválido", text: "El número del código debe ser un entero mayor a 0." });
+            return;
+        }
+        if (!idArea || idArea === "__nuevo__") {
+            Swal.fire({ icon: "warning", title: "Datos incompletos", text: "Selecciona una ubicación." });
             return;
         }
         if (!Number.isInteger(stock) || stock < 1 || stock > 50) {
@@ -669,7 +745,7 @@ function initModalCrear() {
             return;
         }
         if (!patronTexto.test(nombre)) {
-            Swal.fire({ icon: "warning", title: "Nombre inválido", text: "El nombre de la herramienta tiene símbolos no permitidos." });
+            Swal.fire({ icon: "warning", title: "Nombre inválido", text: "El nombre de la herramienta solo admite letras, números, espacios y los signos . , ( ) -" });
             return;
         }
         if (!idMarca || idMarca === "__nuevo__") {
@@ -722,30 +798,23 @@ function initModalEditar() {
     if (!editModal || !form) return;
 
     const selectUbicacion = document.getElementById("editItemLocation");
+    const selectCategoria = document.getElementById("editItemCategory");
+    const selectMarca = document.getElementById("editItemBrand");
+    const selectEstado = document.getElementById("editItemStatus");
 
-    conectarSelectConAgregar(selectUbicacion, {
-        titulo: "Nueva ubicación",
-        placeholder: "Nombre de la ubicación",
-        obtenerLista: () => cache.areas,
-        campoNombre: "nombreArea",
-        etiquetaAgregar: "Agregar nueva ubicación",
-        crear: async (nombre) => {
-            if (cache.tiposArea.length === 0) {
-                throw new Error("No hay tipos de área configurados en el sistema.");
-            }
-            const creada = await agregarArea({ nombreArea: nombre, tipoArea: cache.tiposArea[0].id });
-            cache.areas.push(creada);
-            return creada;
-        },
-    });
+    conectarSelectConAgregar(selectUbicacion, configUbicacion());
+    conectarSelectConAgregar(selectCategoria, configCategoria());
+    conectarSelectConAgregar(selectMarca, configMarca());
+    conectarSelectConAgregar(selectEstado, { obtenerLista: () => [], campoNombre: "", etiquetaAgregar: null });
+    refrescarSelect(selectEstado);
 
     editModal.addEventListener("show.bs.modal", (evento) => {
         const boton = evento.relatedTarget;
         if (!boton) return;
 
-        poblarSelect(document.getElementById("editItemCategory"), cache.categorias, "nombreCategoria", boton.dataset.idcategoria);
-        poblarSelect(document.getElementById("editItemBrand"), cache.marcas, "nombreMarca", boton.dataset.idmarca);
-        poblarSelectConAgregar(selectUbicacion, cache.areas, "nombreArea", boton.dataset.idarea, "Agregar nueva ubicación");
+        poblarSelectConAgregar(selectCategoria, cache.categorias, "nombreCategoria", boton.dataset.idcategoria, "Agregar nueva categoría");
+        poblarSelectConAgregar(selectMarca, cache.marcas, "nombreMarca", boton.dataset.idmarca, "Agregar nueva marca");
+        poblarSelectConAgregar(selectUbicacion, cache.areas, "nombreArea", boton.dataset.idarea, null);
 
         document.getElementById("editItemId").value = boton.dataset.id;
         document.getElementById("editItemDetalleId").value = boton.dataset.detalle;
@@ -768,6 +837,7 @@ function initModalEditar() {
                 estadoSelect.value = mapa[estado.nombreEstadoHerramienta] || "Disponible";
             }
         }
+        refrescarSelect(estadoSelect);
     });
 
     form.addEventListener("submit", async (evento) => {
@@ -797,7 +867,11 @@ function initModalEditar() {
             return;
         }
         if (!patronTexto.test(nombre)) {
-            Swal.fire({ icon: "warning", title: "Nombre inválido", text: "El nombre de la herramienta tiene símbolos no permitidos." });
+            Swal.fire({ icon: "warning", title: "Nombre inválido", text: "El nombre de la herramienta solo admite letras, números, espacios y los signos . , ( ) -" });
+            return;
+        }
+        if (!marcaId || marcaId === "__nuevo__") {
+            Swal.fire({ icon: "warning", title: "Datos incompletos", text: "Selecciona una marca." });
             return;
         }
         if (!idArea || idArea === "__nuevo__") {
@@ -827,7 +901,7 @@ function initModalEditar() {
                 });
             }
 
-            if (categoriaId) {
+            if (categoriaId && categoriaId !== "__nuevo__") {
                 const relActual = cache.relCategorias.find((r) => r.idHerramienta === idHerramienta);
                 if (!relActual || String(relActual.idCategoria) !== String(categoriaId)) {
                     if (relActual) await eliminarHerramientaCategoria(relActual.idCategoria, idHerramienta).catch(() => {});
@@ -959,7 +1033,7 @@ async function renderInventoryView() {
         initBusquedaAreas();
     } catch (error) {
         console.error(error);
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">No se pudo cargar el inventario. Revisa tu conexión con el servidor.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">No se pudo cargar el inventario. Revisa tu conexión con el servidor.</td></tr>';
         Swal.fire({ icon: "error", title: "No se pudo cargar el inventario", text: "Revisa tu conexión con el servidor." });
     }
 }
