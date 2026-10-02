@@ -24,6 +24,44 @@ function mostrarNombreBienvenida() {
     }
 }
 
+function fechaLocalISO(fecha) {
+    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+    const dia = String(fecha.getDate()).padStart(2, "0");
+    return `${fecha.getFullYear()}-${mes}-${dia}`;
+}
+
+function pintarGraficoSemanal(prestamos, estadosPrestamo) {
+    const contenedor = document.getElementById("graficoSemanal");
+    if (!contenedor) return;
+
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const diasDesdeLunes = (hoy.getDay() + 6) % 7;
+    const lunes = new Date(hoy);
+    lunes.setDate(hoy.getDate() - diasDesdeLunes);
+
+    const diasSemana = Array.from({ length: 7 }, (_, i) => {
+        const dia = new Date(lunes);
+        dia.setDate(lunes.getDate() + i);
+        return fechaLocalISO(dia);
+    });
+
+    const rechazado = estadosPrestamo.find((e) => e.nombreEstado === "RECHAZADO");
+    const conteos = diasSemana.map((iso) =>
+        prestamos.filter((p) => p.fechaInicio === iso && (!rechazado || p.estado !== rechazado.id)).length);
+
+    const maximo = Math.max(...conteos, 1);
+    contenedor.innerHTML = conteos.map((cantidad) =>
+        `<div class="barra" style="height:${cantidad === 0 ? 2 : Math.max(8, Math.round((cantidad / maximo) * 100))}%"><span>${cantidad}</span></div>`
+    ).join("");
+
+    const rango = document.getElementById("graficoSemanalRango");
+    if (rango) {
+        const formato = (iso) => new Date(iso + "T00:00:00").toLocaleDateString("es-SV", { day: "2-digit", month: "short" });
+        rango.textContent = `Semana del ${formato(diasSemana[0])} al ${formato(diasSemana[6])} (por fecha de inicio, sin rechazados)`;
+    }
+}
+
 async function renderPanelView() {
     const statTotal = document.getElementById("statTotalImplementos");
     if (!statTotal) return;
@@ -74,6 +112,8 @@ async function renderPanelView() {
             badgePendientesAprobar.textContent = cantPendientesAprobar;
             badgePendientesAprobar.hidden = cantPendientesAprobar === 0;
         }
+
+        pintarGraficoSemanal(prestamos, estadosPrestamo);
 
         const pctDisponibles = Math.round((cantDisponibles / totalDetalles) * 100);
         const pctPrestados = Math.round((cantPrestados / totalDetalles) * 100);
