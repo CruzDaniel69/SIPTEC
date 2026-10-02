@@ -277,8 +277,21 @@ async function eliminarOpcionPersonalizada(select, id, nombre) {
     }
 }
 
+async function conSwalSobreModal(accion) {
+    const modalAbierto = document.querySelector(".modal.show");
+    const instancia = modalAbierto ? bootstrap.Modal.getInstance(modalAbierto) : null;
+    const trampaFoco = instancia ? instancia._focustrap : null;
+
+    if (trampaFoco) trampaFoco.deactivate();
+    try {
+        return await accion();
+    } finally {
+        if (trampaFoco) trampaFoco.activate();
+    }
+}
+
 async function manejarAgregarNuevaOpcion(config) {
-    const { value: nombre } = await Swal.fire({
+    const { value: nombre } = await conSwalSobreModal(() => Swal.fire({
         title: config.titulo,
         input: "text",
         inputPlaceholder: config.placeholder,
@@ -292,7 +305,7 @@ async function manejarAgregarNuevaOpcion(config) {
             if (!patronTexto.test(texto)) return "Ese nombre tiene símbolos no permitidos.";
             return null;
         },
-    });
+    }));
 
     if (!nombre) return null;
 
@@ -390,6 +403,10 @@ function initModalCrearArea() {
             Swal.fire({ icon: "warning", title: "Datos incompletos", text: "Escribe el tipo de área." });
             return;
         }
+        if (!patronTexto.test(tipoTexto)) {
+            Swal.fire({ icon: "warning", title: "Tipo inválido", text: "El tipo de área tiene símbolos no permitidos." });
+            return;
+        }
         if (cache.areas.some((a) => a.nombreArea.toLowerCase() === nombre.toLowerCase())) {
             Swal.fire({ icon: "warning", title: "Área existente", text: "Ya existe un área con ese nombre." });
             return;
@@ -440,8 +457,8 @@ function initModalEditarArea() {
             Swal.fire({ icon: "warning", title: "Datos incompletos", text: "Revisa el nombre y el tipo de área." });
             return;
         }
-        if (!patronTexto.test(nombre)) {
-            Swal.fire({ icon: "warning", title: "Nombre inválido", text: "El nombre del área tiene símbolos no permitidos." });
+        if (!patronTexto.test(nombre) || !patronTexto.test(tipoTexto)) {
+            Swal.fire({ icon: "warning", title: "Datos inválidos", text: "El nombre o el tipo de área tiene símbolos no permitidos." });
             return;
         }
         if (cache.areas.some((a) => a.id !== id && a.nombreArea.toLowerCase() === nombre.toLowerCase())) {
