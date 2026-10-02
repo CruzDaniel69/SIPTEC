@@ -808,9 +808,45 @@ function initModalEditar() {
     conectarSelectConAgregar(selectEstado, { obtenerLista: () => [], campoNombre: "", etiquetaAgregar: null });
     refrescarSelect(selectEstado);
 
+    const selectPrefijo = document.getElementById("editItemCodePrefix");
+    const inputNumero = document.getElementById("editItemCodeNumber");
+    const textoVistaPrevia = document.getElementById("editItemCodePreview");
+    conectarSelectConAgregar(selectPrefijo, configPrefijo());
+
+    function codigoEditado() {
+        const prefijo = selectPrefijo.value;
+        const numero = inputNumero.value.trim();
+        if (!prefijo || prefijo === "__nuevo__" || !numero) return "";
+        return `${prefijo}-${numero}`.toUpperCase();
+    }
+
+    function actualizarVistaPrevia() {
+        const idActual = Number(document.getElementById("editItemDetalleId").value);
+        const codigo = codigoEditado();
+
+        if (!codigo) {
+            textoVistaPrevia.className = "atenuado";
+            textoVistaPrevia.textContent = "";
+            return;
+        }
+
+        const repetido = cache.detalles.some((d) => d.idDetalle !== idActual && (d.codInv || "").toUpperCase() === codigo);
+        textoVistaPrevia.className = repetido ? "text-danger" : "atenuado";
+        textoVistaPrevia.textContent = repetido ? `Ya existe: ${codigo}` : `Quedará como: ${codigo}`;
+    }
+
+    [selectPrefijo, inputNumero].forEach((campo) => campo.addEventListener("input", actualizarVistaPrevia));
+
     editModal.addEventListener("show.bs.modal", (evento) => {
         const boton = evento.relatedTarget;
         if (!boton) return;
+
+        const codigoActual = String(boton.dataset.cod || "");
+        const posicionGuion = codigoActual.indexOf("-");
+        const prefijoActual = posicionGuion > 0 ? codigoActual.slice(0, posicionGuion).toUpperCase() : "";
+        const numeroActual = posicionGuion > 0 ? codigoActual.slice(posicionGuion + 1) : codigoActual;
+        poblarSelectConAgregar(selectPrefijo, listaPrefijos(), "nombrePrefijo", prefijoActual, "Agregar nuevo prefijo");
+        inputNumero.value = numeroActual;
 
         poblarSelectConAgregar(selectCategoria, cache.categorias, "nombreCategoria", boton.dataset.idcategoria, "Agregar nueva categoría");
         poblarSelectConAgregar(selectMarca, cache.marcas, "nombreMarca", boton.dataset.idmarca, "Agregar nueva marca");
@@ -818,7 +854,6 @@ function initModalEditar() {
 
         document.getElementById("editItemId").value = boton.dataset.id;
         document.getElementById("editItemDetalleId").value = boton.dataset.detalle;
-        document.getElementById("editItemCode").value = boton.dataset.cod;
         document.getElementById("editItemName").value = boton.dataset.nombre;
         document.getElementById("editItemStock").value = boton.dataset.stock;
 
@@ -838,6 +873,7 @@ function initModalEditar() {
             }
         }
         refrescarSelect(estadoSelect);
+        actualizarVistaPrevia();
     });
 
     form.addEventListener("submit", async (evento) => {
@@ -846,7 +882,7 @@ function initModalEditar() {
         const idHerramienta = Number(document.getElementById("editItemId").value);
         const idDetalleEditado = Number(document.getElementById("editItemDetalleId").value);
         const detalle = cache.detalles.find((d) => d.idDetalle === idDetalleEditado);
-        const codigo = document.getElementById("editItemCode").value.trim().toUpperCase();
+        const codigo = codigoEditado();
         const nombre = document.getElementById("editItemName").value.trim();
         const marcaId = document.getElementById("editItemBrand").value;
         const categoriaId = document.getElementById("editItemCategory").value;
@@ -854,6 +890,14 @@ function initModalEditar() {
         const idArea = selectUbicacion.value;
         const estadoTexto = document.getElementById("editItemStatus").value;
 
+        if (!selectPrefijo.value || selectPrefijo.value === "__nuevo__") {
+            Swal.fire({ icon: "warning", title: "Código inválido", text: "Selecciona un prefijo para el código." });
+            return;
+        }
+        if (!/^\d+$/.test(inputNumero.value.trim())) {
+            Swal.fire({ icon: "warning", title: "Código inválido", text: "El número del código solo admite dígitos (0-9)." });
+            return;
+        }
         if (!codigo || !patronCodigo.test(codigo)) {
             Swal.fire({ icon: "warning", title: "Código inválido", text: "El código solo admite letras, números y guiones." });
             return;

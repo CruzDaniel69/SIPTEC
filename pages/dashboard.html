@@ -117,17 +117,24 @@
         <div class="modal-body row g-3">
           <input id="editItemId" type="hidden">
           <input id="editItemDetalleId" type="hidden">
-          <div class="col-md-6">
-            <label class="form-label" for="editItemCode">Código</label>
-            <input id="editItemCode" class="form-control" required>
+          <div class="col-4">
+            <label class="form-label" for="editItemCodePrefix">Prefijo</label>
+            <select id="editItemCodePrefix" class="form-select"></select>
           </div>
-          <div class="col-md-6">
+          <div class="col-4">
+            <label class="form-label" for="editItemCodeNumber">Número</label>
+            <input id="editItemCodeNumber" class="form-control" inputmode="numeric" maxlength="10" placeholder="Ej. 21">
+          </div>
+          <div class="col-4">
             <label class="form-label" for="editItemStatus">Estado</label>
             <select id="editItemStatus" class="form-select">
               <option value="Disponible">Disponible</option>
               <option value="Prestado">Prestado</option>
             </select>
-            <small id="editItemStatusAviso" class="text-danger"></small>
+          </div>
+          <div class="col-12">
+            <small id="editItemCodePreview" class="atenuado"></small>
+            <small id="editItemStatusAviso" class="text-danger d-block"></small>
           </div>
           <div class="col-12">
             <label class="form-label" for="editItemName">Nombre</label>
