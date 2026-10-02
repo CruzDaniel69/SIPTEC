@@ -1,16 +1,12 @@
 import { obtenerUsuarioPorId, actualizarUsuario } from "../services/usuarioService.js";
+import { cerrarSesionCompleta } from "../utils/sesion.js";
 
 function idUsuarioActual() {
     return Number(localStorage.getItem("siptec-usuario-id")) || 1;
 }
 
 function cerrarSesion() {
-    localStorage.removeItem("siptec-usuario-id");
-    localStorage.removeItem("siptec-role");
-    localStorage.removeItem("siptec-usuario-nombre");
-    localStorage.removeItem("siptec-usuario-apellido");
-    localStorage.removeItem("siptec-usuario-correo");
-    window.location.href = "../index.html";
+    return cerrarSesionCompleta("../index.html");
 }
 
 function conectarLogout(boton) {

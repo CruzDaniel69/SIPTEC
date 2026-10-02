@@ -6,6 +6,9 @@ import { initReportsController } from '../controllers/reportsController.js';
 import { initSettingsController } from '../controllers/settingsController.js';
 import { initPanelController } from '../controllers/panelController.js';
 import { initPanelEmpleadoController } from '../controllers/panelEmpleadoController.js';
+import { exigirSesion } from '../utils/sesion.js';
+
+exigirSesion('../index.html');
 
 document.addEventListener('DOMContentLoaded', () => {
 
