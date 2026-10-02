@@ -22,15 +22,17 @@
       </div>
 
       <div class="empleado-seccion-herramienta row g-3">
-        <div class="col-md-8">
+        <div class="col-12">
           <label class="form-label" for="empEquipo">Herramienta a solicitar</label>
           <input id="empEquipo" class="form-control" list="empEquipoOptions" maxlength="100" placeholder="Busca el equipo" required>
           <datalist id="empEquipoOptions"></datalist>
           <small id="empEquipoAviso" class="atenuado"></small>
         </div>
-        <div class="col-md-4">
-          <label class="form-label" for="empCantidad">Cantidad</label>
-          <input id="empCantidad" class="form-control" type="number" min="1" value="1" required>
+        <div class="col-12">
+          <label class="form-label">Piezas disponibles (marca las que necesitas)</label>
+          <div id="empUnidades" class="d-flex flex-wrap gap-2">
+            <small class="atenuado">Primero busca y selecciona una herramienta.</small>
+          </div>
         </div>
       </div>
 

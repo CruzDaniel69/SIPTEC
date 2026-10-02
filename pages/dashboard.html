@@ -38,8 +38,6 @@
 
     <section class="area-contenido">
       <header class="barra-superior">
-        <button id="refreshBtn" class="boton-icono" type="button" title="Actualizar"><i class="bi bi-arrow-clockwise"></i></button>
-        <div class="chip-fecha"><i class="bi bi-calendar3"></i><span id="dateText"></span></div>
         <div class="chip-usuario"><i class="bi bi-person-circle"></i><span id="nombreRolTopbar">Administrador</span></div>
         <button id="logoutBtn" class="boton-icono logout-btn" type="button" title="Cerrar cuenta" aria-label="Cerrar cuenta">
           <i class="bi bi-box-arrow-right"></i>
@@ -58,11 +56,27 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
         <div class="modal-body row g-3">
-          <div class="col-6">
-            <label class="form-label" for="itemCode">Código</label>
-            <input id="itemCode" class="form-control" placeholder="Ej. TAL-002" required>
+          <div class="col-4">
+            <label class="form-label" for="itemCodePrefix">Prefijo</label>
+            <select id="itemCodePrefix" class="form-select" required>
+              <option value="EQ" selected>EQ</option>
+              <option value="HE">HE</option>
+              <option value="TAL">TAL</option>
+              <option value="LAB">LAB</option>
+            </select>
           </div>
-          <div class="col-6">
+          <div class="col-4">
+            <label class="form-label" for="itemCodeNumber">Número inicial</label>
+            <input id="itemCodeNumber" class="form-control" type="number" min="1" step="1" placeholder="Ej. 21" required>
+          </div>
+          <div class="col-4">
+            <label class="form-label" for="itemStock">Piezas</label>
+            <input id="itemStock" class="form-control" type="number" min="1" max="50" step="1" value="1" required>
+          </div>
+          <div class="col-12">
+            <small id="itemCodePreview" class="atenuado">Se creará un código por cada pieza (ej. EQ-21, EQ-22…).</small>
+          </div>
+          <div class="col-12">
             <label class="form-label" for="itemCategory">Categoría</label>
             <select id="itemCategory" class="form-select">
               <option value="" disabled selected>Selecciona una opción</option>
@@ -72,15 +86,11 @@
             <label class="form-label" for="itemName">Nombre</label>
             <input id="itemName" class="form-control" placeholder="Escribe el nombre del equipo" required>
           </div>
-          <div class="col-6">
+          <div class="col-12">
             <label class="form-label" for="itemBrand">Marca</label>
-            <select id="itemBrand" class="form-select" required>
+            <select id="itemBrand" class="form-select">
               <option value="" disabled selected>Selecciona una opción</option>
             </select>
-          </div>
-          <div class="col-6">
-            <label class="form-label" for="itemStock">Stock</label>
-            <input id="itemStock" class="form-control" type="number" min="1" placeholder="Ej. 5" required>
           </div>
           <div class="col-12">
             <label class="form-label" for="itemLocation">Ubicación</label>
@@ -106,6 +116,7 @@
         </div>
         <div class="modal-body row g-3">
           <input id="editItemId" type="hidden">
+          <input id="editItemDetalleId" type="hidden">
           <div class="col-md-6">
             <label class="form-label" for="editItemCode">Código</label>
             <input id="editItemCode" class="form-control" required>
@@ -115,8 +126,8 @@
             <select id="editItemStatus" class="form-select">
               <option value="Disponible">Disponible</option>
               <option value="Prestado">Prestado</option>
-              <option value="Daniado">Dañado</option>
             </select>
+            <small id="editItemStatusAviso" class="text-danger"></small>
           </div>
           <div class="col-12">
             <label class="form-label" for="editItemName">Nombre</label>
@@ -139,8 +150,8 @@
             </select>
           </div>
           <div class="col-md-6">
-            <label class="form-label" for="editItemStock">Stock</label>
-            <input id="editItemStock" class="form-control" type="number" min="1" required>
+            <label class="form-label" for="editItemStock">Piezas de este equipo</label>
+            <input id="editItemStock" class="form-control" type="number" min="1" readonly>
           </div>
           <div class="col-md-6">
             <label class="form-label" for="editItemLocation">Area / Ubicación</label>
@@ -319,6 +330,8 @@
         <div class="modal-body">
           <input id="damageReturnId" type="hidden">
           <p id="damageItemSummary" class="atenuado mb-3"></p>
+          <label class="form-label">¿Qué pieza(s) llegaron dañadas?</label>
+          <div id="damageUnitsList" class="d-flex flex-wrap gap-2 mb-3"></div>
           <label class="form-label" for="damageDescription">Daños presentados</label>
           <textarea id="damageDescription" class="form-control" rows="5" required placeholder="Describe golpes, piezas faltantes, fallas eléctricas, rayones u otros daños..."></textarea>
         </div>

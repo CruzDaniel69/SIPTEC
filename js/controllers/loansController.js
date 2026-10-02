@@ -52,18 +52,25 @@ async function cargarCatalogos() {
 function construirFilaPrestamo(prestamo) {
     const usuario = cache.usuarios.find((u) => u.id === prestamo.usuario);
     const estado = cache.estados.find((e) => e.id === prestamo.estado);
-    const detalleHerramienta = cache.detallesPrestamoHerramienta.find((d) => d.prestamo === prestamo.id);
+    const detallesPrestamo = cache.detallesPrestamoHerramienta.filter((d) => d.prestamo === prestamo.id);
+    const detalleHerramienta = detallesPrestamo[0];
     const detalleArea = cache.detallesPrestamoArea.find((d) => d.prestamoIdPrestamo === prestamo.id);
 
     let tipo = "Herramienta";
     let productoArea = "-";
     let cantidad = null;
+    let detalleTexto = "";
+    let unidades = [];
 
     if (detalleHerramienta) {
         const herramienta = cache.herramientas.find((h) => h.idHerramienta === detalleHerramienta.herramienta);
         tipo = "Herramienta";
         productoArea = herramienta ? herramienta.nombreHerramienta : "Herramienta #" + detalleHerramienta.herramienta;
-        cantidad = detalleHerramienta.cantidad;
+        cantidad = detallesPrestamo.reduce((suma, d) => suma + (d.cantidad || 1), 0);
+        unidades = unidadesDelPrestamo(detallesPrestamo);
+        detalleTexto = detallesPrestamo.some((d) => d.detalleHerramienta)
+            ? unidades.map((u) => u.codInv).join(", ")
+            : "x" + cantidad;
     } else if (detalleArea) {
         const area = cache.areas.find((a) => a.id === detalleArea.areasIdArea);
         tipo = "Área";
@@ -80,10 +87,23 @@ function construirFilaPrestamo(prestamo) {
         tipo,
         productoArea,
         cantidad,
+        detalleTexto,
+        unidades,
         idEstado: prestamo.estado,
         nombreEstado: estado ? estado.nombreEstado : "DESCONOCIDO",
         detalleHerramienta,
     };
+}
+
+function unidadesDelPrestamo(detallesPrestamo) {
+    const unidades = [];
+    detallesPrestamo.forEach((detalle) => {
+        const unidad = detalle.detalleHerramienta
+            ? cache.detallesHerramienta.find((u) => u.idDetalle === detalle.detalleHerramienta)
+            : cache.detallesHerramienta.find((u) => u.idHerramienta === detalle.herramienta);
+        if (unidad && !unidades.some((u) => u.idDetalle === unidad.idDetalle)) unidades.push(unidad);
+    });
+    return unidades;
 }
 
 function construirFilas() {
@@ -107,7 +127,7 @@ function pintarTablaPrestamos() {
             <td>${fila.nombreUsuario}</td>
             <td>${fila.fechaInicio}</td>
             <td><span class="estado activo">${fila.tipo}</span></td>
-            <td>${fila.productoArea}${fila.cantidad ? ` <span class="atenuado">(x${fila.cantidad})</span>` : ""}</td>
+            <td>${fila.productoArea}${fila.detalleTexto ? ` <span class="atenuado">(${fila.detalleTexto})</span>` : ""}</td>
             <td><span class="estado ${claseEstadoPrestamo(fila.nombreEstado)}">${fila.nombreEstado}</span></td>
             <td><button type="button" class="boton-pastilla boton-contorno" data-ver="${fila.id}">Ver</button></td>
         </tr>
@@ -126,7 +146,7 @@ function pintarDetalle(fila) {
         <span class="field-label">Solicitante</span>
         <p style="margin:4px 0 12px; font-weight:600;">${fila.nombreUsuario}</p>
         <span class="field-label">Tipo de solicitud</span>
-        <p style="margin:4px 0 12px; font-weight:600;">${fila.tipo} — ${fila.productoArea}${fila.cantidad ? ` (x${fila.cantidad})` : ""}</p>
+        <p style="margin:4px 0 12px; font-weight:600;">${fila.tipo} — ${fila.productoArea}${fila.detalleTexto ? ` (${fila.detalleTexto})` : ""}</p>
         <span class="field-label">Fecha esperada de devolución</span>
         <p style="margin:0 0 16px; font-weight:600;">${fila.fechaEsperada || "-"}</p>
         ${puedeGestionar ? `
@@ -159,16 +179,17 @@ async function cambiarEstadoPrestamo(fila, nombreEstado) {
             estado: estado.id,
         });
 
-        if (nombreEstado === "APROBADO" && fila.detalleHerramienta) {
-            const detalle = cache.detallesHerramienta.find((d) => d.idHerramienta === fila.detalleHerramienta.herramienta);
+        if (nombreEstado === "APROBADO") {
             const idEnPrestamo = (cache.estadosHerramienta.find((e) => e.nombreEstadoHerramienta === "EN PRESTAMO") || {}).id;
-            if (detalle && idEnPrestamo) {
-                await actualizarDetalleHerramienta(detalle.idDetalle, {
-                    idHerramienta: detalle.idHerramienta,
-                    idMarca: detalle.idMarca,
-                    idEstadoHerramienta: idEnPrestamo,
-                    codInv: detalle.codInv,
-                });
+            if (idEnPrestamo) {
+                for (const detalle of fila.unidades) {
+                    await actualizarDetalleHerramienta(detalle.idDetalle, {
+                        idHerramienta: detalle.idHerramienta,
+                        idMarca: detalle.idMarca,
+                        idEstadoHerramienta: idEnPrestamo,
+                        codInv: detalle.codInv,
+                    });
+                }
             }
         }
 
@@ -203,7 +224,7 @@ function pintarDevoluciones() {
                 <span class="etiqueta-codigo">${fila.codigo}</span>
             </div>
             <h4>${fila.nombreUsuario}</h4>
-            <div class="tool-line"><i class="bi bi-box-seam"></i>${fila.productoArea}${fila.cantidad ? ` (x${fila.cantidad})` : ""}</div>
+            <div class="tool-line"><i class="bi bi-box-seam"></i>${fila.productoArea}${fila.detalleTexto ? ` (${fila.detalleTexto})` : ""}</div>
             ${puedeRegistrarDevolucion ? `
             <div class="card-actions">
                 <button type="button" class="boton-pastilla boton-solido-verde" data-devolver="${fila.id}"><i class="bi bi-check-lg"></i>Devuelto</button>
@@ -216,7 +237,7 @@ function pintarDevoluciones() {
     }).join("");
 }
 
-async function marcarDevuelto(idPrestamo, idEstadoHerramientaDestino) {
+async function marcarDevuelto(idPrestamo, idsUnidadesDanadas = []) {
     if (!puedeGestionar(["ADMINISTRADOR", "IT"])) {
         Swal.fire({ icon: "warning", title: "Acción no permitida", text: "Tu rol no tiene permiso para registrar devoluciones." });
         return;
@@ -255,10 +276,12 @@ async function marcarDevuelto(idPrestamo, idEstadoHerramientaDestino) {
             estado: estadoDevuelto.id,
         });
 
-        if (fila.detalleHerramienta) {
-            const detalle = cache.detallesHerramienta.find((d) => d.idHerramienta === fila.detalleHerramienta.herramienta);
-            const idEstadoDestino = idEstadoHerramientaDestino || (cache.estadosHerramienta.find((e) => e.nombreEstadoHerramienta === "DISPONIBLE") || {}).id;
-            if (detalle && idEstadoDestino) {
+        const idDisponible = (cache.estadosHerramienta.find((e) => e.nombreEstadoHerramienta === "DISPONIBLE") || {}).id;
+        const idDanado = (cache.estadosHerramienta.find((e) => e.nombreEstadoHerramienta === "DAÑADO") || {}).id;
+
+        for (const detalle of fila.unidades) {
+            const idEstadoDestino = idsUnidadesDanadas.includes(detalle.idDetalle) && idDanado ? idDanado : idDisponible;
+            if (idEstadoDestino) {
                 await actualizarDetalleHerramienta(detalle.idDetalle, {
                     idHerramienta: detalle.idHerramienta,
                     idMarca: detalle.idMarca,
@@ -312,6 +335,14 @@ function initModalDamage() {
         document.getElementById("damageReturnId").value = boton.dataset.prestamo || "";
         document.getElementById("damageItemSummary").textContent = boton.dataset.resumen || "";
         document.getElementById("damageDescription").value = "";
+
+        const fila = construirFilas().find((f) => f.id === Number(boton.dataset.prestamo));
+        const lista = document.getElementById("damageUnitsList");
+        const unidades = fila ? fila.unidades : [];
+        lista.innerHTML = unidades.map((u) => `
+            <label class="btn btn-outline-danger btn-sm" style="cursor:pointer;">
+                <input type="checkbox" class="form-check-input me-1" data-unidad-danada="${u.idDetalle}" ${unidades.length === 1 ? "checked" : ""}> ${u.codInv}
+            </label>`).join("");
     });
 
     form.addEventListener("submit", async (evento) => {
@@ -325,10 +356,16 @@ function initModalDamage() {
             return;
         }
 
-        const estadoDanado = cache.estadosHerramienta.find((e) => e.nombreEstadoHerramienta === "DAÑADO");
+        const idsDanadas = Array.from(document.querySelectorAll("#damageUnitsList input[data-unidad-danada]:checked"))
+            .map((casilla) => Number(casilla.dataset.unidadDanada));
+
+        if (document.querySelectorAll("#damageUnitsList input").length > 0 && idsDanadas.length === 0) {
+            Swal.fire({ icon: "warning", title: "Elige la pieza dañada", text: "Marca al menos una pieza que llegó dañada." });
+            return;
+        }
 
         bootstrap.Modal.getOrCreateInstance(modal).hide();
-        await marcarDevuelto(idPrestamo, estadoDanado ? estadoDanado.id : null);
+        await marcarDevuelto(idPrestamo, idsDanadas);
     });
 }
 
@@ -349,7 +386,7 @@ function initEventosTabla() {
         grid.addEventListener("click", (evento) => {
             const boton = evento.target.closest("[data-devolver]");
             if (!boton) return;
-            marcarDevuelto(Number(boton.dataset.devolver), null);
+            marcarDevuelto(Number(boton.dataset.devolver), []);
         });
     }
 }

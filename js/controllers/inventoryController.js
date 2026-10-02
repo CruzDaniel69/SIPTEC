@@ -1,7 +1,7 @@
 import { obtenerHerramientas, agregarHerramienta, actualizarHerramienta, eliminarHerramienta } from "../services/herramientaService.js";
 import { obtenerDetallesHerramienta, agregarDetalleHerramienta, actualizarDetalleHerramienta, eliminarDetalleHerramienta } from "../services/detalleHerramientaService.js";
-import { obtenerMarcas, agregarMarca } from "../services/marcaService.js";
-import { obtenerCategorias, agregarCategoria } from "../services/categoriaService.js";
+import { obtenerMarcas, agregarMarca, eliminarMarca } from "../services/marcaService.js";
+import { obtenerCategorias, agregarCategoria, eliminarCategoria } from "../services/categoriaService.js";
 import { obtenerHerramientaCategorias, agregarHerramientaCategoria, eliminarHerramientaCategoria } from "../services/herramientaCategoriaService.js";
 import { obtenerEstadosHerramienta } from "../services/estadoHerramientaService.js";
 import { obtenerAreas, agregarArea, actualizarArea, eliminarArea } from "../services/areaService.js";
@@ -51,30 +51,42 @@ async function cargarCatalogos() {
 }
 
 function construirFilas() {
-    return cache.herramientas.map((herramienta) => {
-        const detalle = cache.detalles.find((d) => d.idHerramienta === herramienta.idHerramienta);
-        const marca = detalle ? cache.marcas.find((m) => m.id === detalle.idMarca) : null;
-        const estado = detalle ? cache.estados.find((e) => e.id === detalle.idEstadoHerramienta) : null;
-        const relCategoria = cache.relCategorias.find((r) => r.idHerramienta === herramienta.idHerramienta);
-        const categoria = relCategoria ? cache.categorias.find((c) => c.id === relCategoria.idCategoria) : null;
-        const area = herramienta.idArea ? cache.areas.find((a) => a.id === herramienta.idArea) : null;
+    const filasPorPieza = [];
 
-        return {
-            idHerramienta: herramienta.idHerramienta,
-            idDetalle: detalle ? detalle.idDetalle : null,
-            codInv: detalle ? detalle.codInv : "-",
-            nombre: herramienta.nombreHerramienta,
-            stock: herramienta.stock,
-            idArea: herramienta.idArea || "",
-            nombreArea: area ? area.nombreArea : "Sin asignar",
-            idMarca: detalle ? detalle.idMarca : "",
-            nombreMarca: marca ? marca.nombreMarca : "Sin marca",
-            idCategoria: categoria ? categoria.id : "",
-            nombreCategoria: categoria ? categoria.nombreCategoria : "Sin categoría",
-            idEstadoHerramienta: detalle ? detalle.idEstadoHerramienta : "",
-            nombreEstado: estado ? estado.nombreEstadoHerramienta : "DESCONOCIDO",
-        };
+    cache.herramientas.forEach((herramienta) => {
+        const piezas = cache.detalles.filter((d) => d.idHerramienta === herramienta.idHerramienta);
+        if (piezas.length === 0) {
+            filasPorPieza.push(construirFila(herramienta, null, herramienta.stock));
+        } else {
+            piezas.forEach((pieza) => filasPorPieza.push(construirFila(herramienta, pieza, piezas.length)));
+        }
     });
+
+    return filasPorPieza;
+}
+
+function construirFila(herramienta, detalle, totalPiezas) {
+    const marca = detalle ? cache.marcas.find((m) => m.id === detalle.idMarca) : null;
+    const estado = detalle ? cache.estados.find((e) => e.id === detalle.idEstadoHerramienta) : null;
+    const relCategoria = cache.relCategorias.find((r) => r.idHerramienta === herramienta.idHerramienta);
+    const categoria = relCategoria ? cache.categorias.find((c) => c.id === relCategoria.idCategoria) : null;
+    const area = herramienta.idArea ? cache.areas.find((a) => a.id === herramienta.idArea) : null;
+
+    return {
+        idHerramienta: herramienta.idHerramienta,
+        idDetalle: detalle ? detalle.idDetalle : null,
+        codInv: detalle ? detalle.codInv : "-",
+        nombre: herramienta.nombreHerramienta,
+        stock: totalPiezas,
+        idArea: herramienta.idArea || "",
+        nombreArea: area ? area.nombreArea : "Sin asignar",
+        idMarca: detalle ? detalle.idMarca : "",
+        nombreMarca: marca ? marca.nombreMarca : "Sin marca",
+        idCategoria: categoria ? categoria.id : "",
+        nombreCategoria: categoria ? categoria.nombreCategoria : "Sin categoría",
+        idEstadoHerramienta: detalle ? detalle.idEstadoHerramienta : "",
+        nombreEstado: estado ? estado.nombreEstadoHerramienta : "DESCONOCIDO",
+    };
 }
 
 function filasFiltradas() {
@@ -160,6 +172,109 @@ function poblarSelectConAgregar(select, lista, campoNombre, valorSeleccionado, e
     select.innerHTML = '<option value="" disabled' + (valorSeleccionado ? "" : " selected") + '>Selecciona una opción</option>' +
         opciones +
         `<option value="__nuevo__">+ ${etiquetaAgregar}</option>`;
+
+    if (select.dataset.personalizado) pintarSelectPersonalizado(select);
+}
+
+function pintarSelectPersonalizado(select) {
+    let contenedor = select._contenedorPersonalizado;
+    if (!contenedor) {
+        contenedor = document.createElement("div");
+        contenedor.className = "dropdown select-personalizado";
+        select.insertAdjacentElement("afterend", contenedor);
+        select.classList.add("d-none");
+        select._contenedorPersonalizado = contenedor;
+    }
+
+    const config = select._config;
+    const opciones = Array.from(select.options).filter((o) => o.value !== "");
+    const seleccionada = select.selectedOptions[0];
+    const textoBoton = seleccionada && seleccionada.value !== "" && seleccionada.value !== "__nuevo__" ? seleccionada.textContent : "Selecciona una opción";
+
+    contenedor.innerHTML = "";
+
+    const boton = document.createElement("button");
+    boton.type = "button";
+    boton.className = "form-select";
+    boton.setAttribute("data-bs-toggle", "dropdown");
+    boton.setAttribute("aria-expanded", "false");
+    boton.textContent = textoBoton;
+    contenedor.appendChild(boton);
+
+    const menu = document.createElement("div");
+    menu.className = "dropdown-menu";
+
+    opciones.forEach((opcion) => {
+        const fila = document.createElement("div");
+        fila.className = "fila-opcion";
+
+        const nombre = document.createElement("span");
+        nombre.className = "nombre-opcion";
+        nombre.textContent = opcion.textContent;
+        fila.appendChild(nombre);
+
+        if (opcion.value === "__nuevo__") {
+            fila.classList.add("fila-opcion-nueva");
+            fila.addEventListener("click", () => {
+                select.value = "__nuevo__";
+                select.dispatchEvent(new Event("change"));
+            });
+        } else {
+            fila.addEventListener("click", () => {
+                select.value = opcion.value;
+                pintarSelectPersonalizado(select);
+            });
+
+            if (config && config.eliminar) {
+                const quitar = document.createElement("button");
+                quitar.type = "button";
+                quitar.className = "btn-quitar";
+                quitar.title = "Eliminar";
+                quitar.setAttribute("aria-label", "Eliminar " + opcion.textContent);
+                quitar.textContent = "✕";
+                quitar.addEventListener("click", (evento) => {
+                    evento.stopPropagation();
+                    eliminarOpcionPersonalizada(select, opcion.value, opcion.textContent);
+                });
+                fila.appendChild(quitar);
+            }
+        }
+
+        menu.appendChild(fila);
+    });
+
+    contenedor.appendChild(menu);
+}
+
+async function eliminarOpcionPersonalizada(select, id, nombre) {
+    const config = select._config;
+
+    const confirmacion = await Swal.fire({
+        icon: "warning",
+        title: `¿Eliminar "${nombre}"?`,
+        text: "Esta acción no se puede deshacer.",
+        showCancelButton: true,
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#dc3545",
+    });
+
+    if (!confirmacion.isConfirmed) return;
+
+    try {
+        await config.eliminar(id);
+        const seleccionActual = select.value === String(id) ? "" : select.value;
+        poblarSelectConAgregar(select, config.obtenerLista(), config.campoNombre, seleccionActual, config.etiquetaAgregar);
+        Swal.fire({ icon: "success", title: "Eliminado", confirmButtonColor: "#28a745" });
+    } catch (error) {
+        console.error(error);
+        Swal.fire({
+            icon: "error",
+            title: "No se pudo eliminar",
+            text: "Si algún equipo usa esta opción, primero cambia o elimina ese equipo.",
+            confirmButtonColor: "#dc3545",
+        });
+    }
 }
 
 async function manejarAgregarNuevaOpcion(config) {
@@ -192,6 +307,8 @@ async function manejarAgregarNuevaOpcion(config) {
 
 function conectarSelectConAgregar(select, config) {
     if (!select) return;
+    select._config = config;
+    if (config.eliminar) select.dataset.personalizado = "1";
     select.addEventListener("change", async () => {
         if (select.value !== "__nuevo__") return;
 
@@ -418,6 +535,10 @@ function initModalCrear() {
             cache.categorias.push(creada);
             return creada;
         },
+        eliminar: async (id) => {
+            await eliminarCategoria(id);
+            cache.categorias = cache.categorias.filter((c) => String(c.id) !== String(id));
+        },
     });
 
     conectarSelectConAgregar(selectMarca, {
@@ -430,6 +551,10 @@ function initModalCrear() {
             const creada = await agregarMarca({ nombreMarca: nombre });
             cache.marcas.push(creada);
             return creada;
+        },
+        eliminar: async (id) => {
+            await eliminarMarca(id);
+            cache.marcas = cache.marcas.filter((m) => String(m.id) !== String(id));
         },
     });
 
@@ -449,27 +574,79 @@ function initModalCrear() {
         },
     });
 
+    const selectPrefijo = document.getElementById("itemCodePrefix");
+    const inputNumero = document.getElementById("itemCodeNumber");
+    const inputPiezas = document.getElementById("itemStock");
+    const textoVistaPrevia = document.getElementById("itemCodePreview");
+
+    function generarCodigos() {
+        const numeroInicial = Number(inputNumero.value);
+        const piezas = Number(inputPiezas.value);
+        if (!Number.isInteger(numeroInicial) || numeroInicial < 1 || !Number.isInteger(piezas) || piezas < 1) return [];
+        return Array.from({ length: piezas }, (_, i) => `${selectPrefijo.value}-${numeroInicial + i}`);
+    }
+
+    function codigosRepetidos(codigos) {
+        return codigos.filter((c) => cache.detalles.some((d) => (d.codInv || "").toUpperCase() === c.toUpperCase()));
+    }
+
+    function actualizarVistaPrevia() {
+        const codigos = generarCodigos();
+        if (codigos.length === 0) {
+            textoVistaPrevia.className = "atenuado";
+            textoVistaPrevia.textContent = "Se creará un código por cada pieza (ej. EQ-21, EQ-22…).";
+            return;
+        }
+
+        const repetidos = codigosRepetidos(codigos);
+        if (repetidos.length > 0) {
+            textoVistaPrevia.className = "text-danger";
+            textoVistaPrevia.textContent = "Ya existe: " + repetidos.join(", ");
+            return;
+        }
+
+        textoVistaPrevia.className = "atenuado";
+        textoVistaPrevia.textContent = codigos.length === 1
+            ? "Se creará: " + codigos[0]
+            : `Se crearán ${codigos.length} piezas: ${codigos[0]} al ${codigos[codigos.length - 1]}`;
+    }
+
+    [selectPrefijo, inputNumero, inputPiezas].forEach((campo) => campo.addEventListener("input", actualizarVistaPrevia));
+
     itemModal.addEventListener("show.bs.modal", () => {
         form.reset();
         poblarSelectConAgregar(selectCategoria, cache.categorias, "nombreCategoria", "", "Agregar nueva categoría");
         poblarSelectConAgregar(selectMarca, cache.marcas, "nombreMarca", "", "Agregar nueva marca");
         poblarSelectConAgregar(selectUbicacion, cache.areas, "nombreArea", "", "Agregar nueva ubicación");
+        actualizarVistaPrevia();
     });
 
     form.addEventListener("submit", async (evento) => {
         evento.preventDefault();
 
-        const codigo = document.getElementById("itemCode").value.trim();
         const idCategoria = selectCategoria.value;
         const nombre = document.getElementById("itemName").value.trim();
         const idMarca = selectMarca.value;
-        const stock = Number(document.getElementById("itemStock").value);
+        const stock = Number(inputPiezas.value);
         const idArea = selectUbicacion.value;
 
-        if (!codigo || !patronCodigo.test(codigo)) {
-            Swal.fire({ icon: "warning", title: "Código inválido", text: "El código solo admite letras, números y guiones." });
+        const numeroInicial = Number(inputNumero.value);
+        if (!Number.isInteger(numeroInicial) || numeroInicial < 1) {
+            Swal.fire({ icon: "warning", title: "Código inválido", text: "El número del código debe ser un entero mayor a 0." });
             return;
         }
+        if (!Number.isInteger(stock) || stock < 1 || stock > 50) {
+            Swal.fire({ icon: "warning", title: "Piezas inválidas", text: "Indica entre 1 y 50 piezas." });
+            return;
+        }
+
+        const codigos = generarCodigos();
+        const repetidos = codigosRepetidos(codigos);
+        if (repetidos.length > 0) {
+            Swal.fire({ icon: "warning", title: "Código repetido", text: "Estos códigos ya existen: " + repetidos.join(", ") + ". Cambia el número inicial." });
+            return;
+        }
+
         if (!nombre) {
             Swal.fire({ icon: "warning", title: "Datos incompletos", text: "Escribe el nombre de la herramienta." });
             return;
@@ -482,11 +659,6 @@ function initModalCrear() {
             Swal.fire({ icon: "warning", title: "Datos incompletos", text: "Selecciona una marca." });
             return;
         }
-        if (!stock || stock < 1) {
-            Swal.fire({ icon: "warning", title: "Stock inválido", text: "El stock debe ser al menos 1." });
-            return;
-        }
-
         const estadoDisponible = cache.estados.find((e) => e.nombreEstadoHerramienta === "DISPONIBLE");
         if (!estadoDisponible) {
             Swal.fire({ icon: "error", title: "No se pudo guardar", text: "No se encontró el estado DISPONIBLE." });
@@ -501,12 +673,14 @@ function initModalCrear() {
                 idArea: idArea ? Number(idArea) : null,
             });
 
-            await agregarDetalleHerramienta({
-                idHerramienta: nuevaHerramienta.idHerramienta,
-                idMarca: Number(idMarca),
-                idEstadoHerramienta: estadoDisponible.id,
-                codInv: codigo,
-            });
+            for (const codigo of codigos) {
+                await agregarDetalleHerramienta({
+                    idHerramienta: nuevaHerramienta.idHerramienta,
+                    idMarca: Number(idMarca),
+                    idEstadoHerramienta: estadoDisponible.id,
+                    codInv: codigo,
+                });
+            }
 
             if (idCategoria && idCategoria !== "__nuevo__") {
                 await agregarHerramientaCategoria({
@@ -557,15 +731,25 @@ function initModalEditar() {
         poblarSelectConAgregar(selectUbicacion, cache.areas, "nombreArea", boton.dataset.idarea, "Agregar nueva ubicación");
 
         document.getElementById("editItemId").value = boton.dataset.id;
+        document.getElementById("editItemDetalleId").value = boton.dataset.detalle;
         document.getElementById("editItemCode").value = boton.dataset.cod;
         document.getElementById("editItemName").value = boton.dataset.nombre;
         document.getElementById("editItemStock").value = boton.dataset.stock;
 
         const estado = cache.estados.find((e) => String(e.id) === boton.dataset.idestado);
         const estadoSelect = document.getElementById("editItemStatus");
-        if (estado) {
-            const mapa = { DISPONIBLE: "Disponible", "EN PRESTAMO": "Prestado", "DAÑADO": "Daniado" };
-            estadoSelect.value = mapa[estado.nombreEstadoHerramienta] || "Disponible";
+        const avisoDanado = document.getElementById("editItemStatusAviso");
+
+        if (estado && estado.nombreEstadoHerramienta === "DAÑADO") {
+            estadoSelect.disabled = true;
+            if (avisoDanado) avisoDanado.textContent = "Este equipo está marcado como DAÑADO. Ese estado solo se cambia desde el reporte de daño al momento de la devolución.";
+        } else {
+            estadoSelect.disabled = false;
+            if (avisoDanado) avisoDanado.textContent = "";
+            if (estado) {
+                const mapa = { DISPONIBLE: "Disponible", "EN PRESTAMO": "Prestado" };
+                estadoSelect.value = mapa[estado.nombreEstadoHerramienta] || "Disponible";
+            }
         }
     });
 
@@ -573,8 +757,9 @@ function initModalEditar() {
         evento.preventDefault();
 
         const idHerramienta = Number(document.getElementById("editItemId").value);
-        const detalle = cache.detalles.find((d) => d.idHerramienta === idHerramienta);
-        const codigo = document.getElementById("editItemCode").value.trim();
+        const idDetalleEditado = Number(document.getElementById("editItemDetalleId").value);
+        const detalle = cache.detalles.find((d) => d.idDetalle === idDetalleEditado);
+        const codigo = document.getElementById("editItemCode").value.trim().toUpperCase();
         const nombre = document.getElementById("editItemName").value.trim();
         const marcaId = document.getElementById("editItemBrand").value;
         const categoriaId = document.getElementById("editItemCategory").value;
@@ -586,8 +771,12 @@ function initModalEditar() {
             Swal.fire({ icon: "warning", title: "Código inválido", text: "El código solo admite letras, números y guiones." });
             return;
         }
+        if (cache.detalles.some((d) => d.idDetalle !== idDetalleEditado && (d.codInv || "").toUpperCase() === codigo)) {
+            Swal.fire({ icon: "warning", title: "Código repetido", text: "El código " + codigo + " ya está registrado en otro equipo." });
+            return;
+        }
         if (!nombre || !stock || stock < 1) {
-            Swal.fire({ icon: "warning", title: "Datos incompletos", text: "Revisa el nombre y el stock." });
+            Swal.fire({ icon: "warning", title: "Datos incompletos", text: "Revisa el nombre del equipo." });
             return;
         }
         if (!patronTexto.test(nombre)) {
@@ -599,8 +788,9 @@ function initModalEditar() {
             return;
         }
 
-        const mapaInverso = { Disponible: "DISPONIBLE", Prestado: "EN PRESTAMO", Daniado: "DAÑADO" };
-        const nuevoEstado = cache.estados.find((e) => e.nombreEstadoHerramienta === mapaInverso[estadoTexto]);
+        const estadoSelect = document.getElementById("editItemStatus");
+        const mapaInverso = { Disponible: "DISPONIBLE", Prestado: "EN PRESTAMO" };
+        const nuevoEstado = estadoSelect.disabled ? null : cache.estados.find((e) => e.nombreEstadoHerramienta === mapaInverso[estadoTexto]);
 
         try {
             await actualizarHerramienta(idHerramienta, {
@@ -658,10 +848,15 @@ function initAccionesTabla() {
         const idHerramienta = Number(botonEliminar.dataset.eliminar);
         const idDetalle = botonEliminar.dataset.detalleEliminar;
 
+        const tienePieza = idDetalle && idDetalle !== "null";
+        const piezasDelEquipo = cache.detalles.filter((d) => d.idHerramienta === idHerramienta);
+        const esUltimaPieza = !tienePieza || piezasDelEquipo.length <= 1;
+        const pieza = tienePieza ? cache.detalles.find((d) => String(d.idDetalle) === String(idDetalle)) : null;
+
         const confirmacion = await Swal.fire({
             icon: "warning",
-            title: "¿Eliminar herramienta?",
-            text: "Esta acción no se puede deshacer.",
+            title: pieza ? `¿Eliminar la pieza ${pieza.codInv}?` : "¿Eliminar herramienta?",
+            text: esUltimaPieza ? "Era la última pieza, así que también se eliminará el equipo. Esta acción no se puede deshacer." : "Esta acción no se puede deshacer.",
             showCancelButton: true,
             confirmButtonText: "Eliminar",
             confirmButtonColor: "#dc3545",
@@ -671,19 +866,31 @@ function initAccionesTabla() {
         if (!confirmacion.isConfirmed) return;
 
         try {
-            const relCategoria = cache.relCategorias.find((r) => r.idHerramienta === idHerramienta);
-            if (relCategoria) {
-                await eliminarHerramientaCategoria(relCategoria.idCategoria, idHerramienta).catch(() => {});
+            if (tienePieza) {
+                await eliminarDetalleHerramienta(idDetalle);
             }
-            if (idDetalle && idDetalle !== "null") {
-                await eliminarDetalleHerramienta(idDetalle).catch(() => {});
+
+            if (esUltimaPieza) {
+                const relCategoria = cache.relCategorias.find((r) => r.idHerramienta === idHerramienta);
+                if (relCategoria) {
+                    await eliminarHerramientaCategoria(relCategoria.idCategoria, idHerramienta).catch(() => {});
+                }
+                await eliminarHerramienta(idHerramienta);
+            } else {
+                const herramienta = cache.herramientas.find((h) => h.idHerramienta === idHerramienta);
+                await actualizarHerramienta(idHerramienta, {
+                    idHerramienta: idHerramienta,
+                    nombreHerramienta: herramienta.nombreHerramienta,
+                    descripcionHerramienta: herramienta.descripcionHerramienta || "",
+                    stock: piezasDelEquipo.length - 1,
+                    idArea: herramienta.idArea || null,
+                });
             }
-            await eliminarHerramienta(idHerramienta);
-            Swal.fire({ icon: "success", title: "Herramienta eliminada", confirmButtonColor: "#28a745" });
+            Swal.fire({ icon: "success", title: "Eliminado correctamente", confirmButtonColor: "#28a745" });
             await recargarVista();
         } catch (error) {
             console.error(error);
-            Swal.fire({ icon: "error", title: "No se pudo eliminar", text: "Ocurrió un error al conectar con el servidor.", confirmButtonColor: "#dc3545" });
+            Swal.fire({ icon: "error", title: "No se pudo eliminar", text: "Revisa tu conexión. Si el equipo ya tiene préstamos registrados, no se puede eliminar.", confirmButtonColor: "#dc3545" });
         }
     });
 }

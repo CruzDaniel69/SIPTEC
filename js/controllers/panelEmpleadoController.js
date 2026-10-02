@@ -83,7 +83,10 @@ async function renderPanelEmpleadoView() {
                     let recurso = "-";
                     if (detalleHerramienta) {
                         const herramienta = herramientas.find((h) => h.idHerramienta === detalleHerramienta.herramienta);
-                        recurso = (herramienta ? herramienta.nombreHerramienta : "Herramienta") + ` (x${detalleHerramienta.cantidad})`;
+                        const totalPiezas = detallesHerramienta
+                            .filter((d) => d.prestamo === prestamo.id)
+                            .reduce((suma, d) => suma + (d.cantidad || 1), 0);
+                        recurso = (herramienta ? herramienta.nombreHerramienta : "Herramienta") + ` (x${totalPiezas})`;
                     } else if (detalleArea) {
                         const area = areas.find((a) => a.id === detalleArea.areasIdArea);
                         recurso = area ? area.nombreArea : "Área";
