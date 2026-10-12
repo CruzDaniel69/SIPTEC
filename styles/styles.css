@@ -1193,6 +1193,13 @@
      margin-bottom: 14px;
  }
 
+ /* Lista de equipos dañados en Reportes: separa una tarjeta de otra */
+ #reportesGeneradosGrid {
+     display: flex;
+     flex-direction: column;
+     gap: 16px;
+ }
+
  .tarjeta-devolucion {
      background: var(--panel);
      border: 1px solid var(--line);
