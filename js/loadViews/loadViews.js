@@ -6,17 +6,20 @@ import { initReportsController } from '../controllers/reportsController.js';
 import { initSettingsController } from '../controllers/settingsController.js';
 import { initPanelController } from '../controllers/panelController.js';
 import { initPanelEmpleadoController } from '../controllers/panelEmpleadoController.js';
-import { exigirSesion } from '../utils/sesion.js';
+import { cargarSesion, rolActual } from '../utils/sesion.js';
 
-exigirSesion('../index.html');
+// Se pide a la API quién es el usuario de la cookie; los controllers lo leen de memoria
+const sesionLista = cargarSesion('../index.html');
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await sesionLista;
 
   const viewRoot = document.getElementById('viewRoot');
   const navItems = document.querySelectorAll('.nav-item');
   const appShell = document.getElementById('appShell');
 
-  const ROLE = (localStorage.getItem('siptec-role') || 'ADMINISTRADOR').toUpperCase();
+  // Sin rol conocido se asume el de menos privilegios
+  const ROLE = rolActual() || 'EMPLEADO';
   document.body.dataset.role = ROLE;
 
   const nombreRolTopbar = document.getElementById('nombreRolTopbar');

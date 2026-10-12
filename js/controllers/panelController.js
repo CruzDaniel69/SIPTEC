@@ -1,3 +1,4 @@
+import { usuarioActual } from "../utils/sesion.js";
 import { obtenerDetallesHerramienta } from "../services/detalleHerramientaService.js";
 import { obtenerEstadosHerramienta } from "../services/estadoHerramientaService.js";
 import { obtenerPrestamos } from "../services/prestamoService.js";
@@ -16,8 +17,7 @@ function mostrarNombreBienvenida() {
     const titulo = document.getElementById("tituloBienvenida");
     if (!titulo) return;
 
-    const nombre = localStorage.getItem("siptec-usuario-nombre");
-    const apellido = localStorage.getItem("siptec-usuario-apellido");
+    const { nombreUsuario: nombre, apellidoUsuario: apellido } = usuarioActual() || {};
 
     if (nombre) {
         titulo.textContent = `¡Bienvenido, ${nombre}${apellido ? " " + apellido : ""}!`;

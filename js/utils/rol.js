@@ -1,5 +1,7 @@
+import { rolActual } from "./sesion.js";
+
 export function obtenerRolActual() {
-    return (localStorage.getItem("siptec-role") || "ADMINISTRADOR").toUpperCase();
+    return rolActual();
 }
 
 export function puedeGestionar(rolesPermitidos) {

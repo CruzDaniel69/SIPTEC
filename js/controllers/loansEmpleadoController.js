@@ -1,3 +1,4 @@
+import { idUsuarioActual } from "../utils/sesion.js";
 import { obtenerPrestamos, agregarPrestamo } from "../services/prestamoService.js";
 import { obtenerEstadosPrestamo } from "../services/estadoPrestamoService.js";
 import { obtenerHerramientas } from "../services/herramientaService.js";
@@ -42,9 +43,6 @@ function pintarUnidades(herramienta) {
         </label>`).join("");
 }
 
-function idUsuarioActual() {
-    return Number(localStorage.getItem("siptec-usuario-id")) || 1;
-}
 
 function codigoPrestamo(id) {
     return "PR-" + String(id).padStart(3, "0");

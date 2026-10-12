@@ -1,3 +1,4 @@
+import { usuarioActual, idUsuarioActual } from "../utils/sesion.js";
 import { obtenerPrestamos } from "../services/prestamoService.js";
 import { obtenerEstadosPrestamo } from "../services/estadoPrestamoService.js";
 import { obtenerHerramientas } from "../services/herramientaService.js";
@@ -5,9 +6,6 @@ import { obtenerDetallePrestamoHerramientas } from "../services/detallePrestamoH
 import { obtenerAreas } from "../services/areaService.js";
 import { obtenerDetallePrestamoAreas } from "../services/detallePrestamoAreaService.js";
 
-function idUsuarioActual() {
-    return Number(localStorage.getItem("siptec-usuario-id")) || 1;
-}
 
 function formatearFecha(fechaISO) {
     if (!fechaISO) return "-";
@@ -24,8 +22,7 @@ function mostrarNombreBienvenida() {
     const titulo = document.getElementById("tituloBienvenida");
     if (!titulo) return;
 
-    const nombre = localStorage.getItem("siptec-usuario-nombre");
-    const apellido = localStorage.getItem("siptec-usuario-apellido");
+    const { nombreUsuario: nombre, apellidoUsuario: apellido } = usuarioActual() || {};
 
     if (nombre) {
         titulo.textContent = `¡Bienvenido, ${nombre}${apellido ? " " + apellido : ""}!`;

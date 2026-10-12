@@ -1,10 +1,7 @@
 import { obtenerUsuarioPorId, actualizarUsuario } from "../services/usuarioService.js";
 import { puedeGestionar } from "../utils/rol.js";
-import { cerrarSesionCompleta } from "../utils/sesion.js";
+import { cerrarSesionCompleta, idUsuarioActual } from "../utils/sesion.js";
 
-function idUsuarioActual() {
-    return Number(localStorage.getItem("siptec-usuario-id")) || 1;
-}
 
 function cerrarSesion() {
     return cerrarSesionCompleta("../index.html");
