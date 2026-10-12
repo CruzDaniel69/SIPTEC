@@ -1,112 +1,112 @@
-import { obtenerPrestamos } from "../services/prestamoService.js";
-import { obtenerEstadosPrestamo } from "../services/estadoPrestamoService.js";
-import { obtenerUsuarios } from "../services/usuarioService.js";
-import { obtenerHerramientas } from "../services/herramientaService.js";
-import { obtenerDetallesHerramienta, actualizarDetalleHerramienta } from "../services/detalleHerramientaService.js";
-import { obtenerDetallePrestamoHerramientas } from "../services/detallePrestamoHerramientaService.js";
-import { obtenerAreas } from "../services/areaService.js";
-import { obtenerDetallePrestamoAreas } from "../services/detallePrestamoAreaService.js";
+import { obtenerPrestamosPagina } from "../services/prestamoService.js";
+import { actualizarDetalleHerramienta } from "../services/detalleHerramientaService.js";
 import { obtenerEstadosHerramienta } from "../services/estadoHerramientaService.js";
+import { obtenerPiezasPagina } from "../services/inventarioService.js";
+import { pintarPaginador, TAMANO_PAGINA } from "../utils/paginacion.js";
 import { puedeGestionar } from "../utils/rol.js";
 
-const cache = {
-    prestamos: [], estados: [], usuarios: [], herramientas: [], detallesHerramienta: [],
-    detallesPrestamoHerramienta: [], areas: [], detallesPrestamoArea: [], estadosHerramienta: [],
-};
+const cache = { estadosHerramienta: [], danados: [] };
+let paginaHistorial = 0;
+let paginaDanados = 0;
+let danadosCargados = false;
 let modalListo = false;
 let modoSeleccion = false;
 let seleccionados = new Set();
+const informacionSeleccion = new Map();
 
 function codigoPrestamo(id) {
     return "PR-" + String(id).padStart(3, "0");
 }
 
 async function cargarCatalogos() {
-    const [prestamos, estados, usuarios, herramientas, detallesHerramienta, detallesPrestamoHerramienta, areas, detallesPrestamoArea, estadosHerramienta] = await Promise.all([
-        obtenerPrestamos(),
-        obtenerEstadosPrestamo(),
-        obtenerUsuarios(),
-        obtenerHerramientas(),
-        obtenerDetallesHerramienta(),
-        obtenerDetallePrestamoHerramientas(),
-        obtenerAreas().catch(() => []),
-        obtenerDetallePrestamoAreas().catch(() => []),
-        obtenerEstadosHerramienta(),
-    ]);
-
-    cache.prestamos = prestamos || [];
-    cache.estados = estados || [];
-    cache.usuarios = usuarios || [];
-    cache.herramientas = herramientas || [];
-    cache.detallesHerramienta = detallesHerramienta || [];
-    cache.detallesPrestamoHerramienta = detallesPrestamoHerramienta || [];
-    cache.areas = areas || [];
-    cache.detallesPrestamoArea = detallesPrestamoArea || [];
-    cache.estadosHerramienta = estadosHerramienta || [];
+    cache.estadosHerramienta = (await obtenerEstadosHerramienta()) || [];
 }
 
-function productoDePrestamo(prestamo) {
-    const detalleHerramienta = cache.detallesPrestamoHerramienta.find((d) => d.prestamo === prestamo.id);
-    if (detalleHerramienta) {
-        const herramienta = cache.herramientas.find((h) => h.idHerramienta === detalleHerramienta.herramienta);
-        return herramienta ? herramienta.nombreHerramienta : "Herramienta #" + detalleHerramienta.herramienta;
+async function cargarHistorial(pagina = paginaHistorial) {
+    const datos = await obtenerPrestamosPagina({ page: pagina, size: TAMANO_PAGINA, estados: ["DEVUELTO", "RECHAZADO"] });
+
+    if (datos.content.length === 0 && pagina > 0) {
+        return cargarHistorial(pagina - 1);
     }
-    const detalleArea = cache.detallesPrestamoArea.find((d) => d.prestamoIdPrestamo === prestamo.id);
-    if (detalleArea) {
-        const area = cache.areas.find((a) => a.id === detalleArea.areasIdArea);
-        return area ? area.nombreArea : "Área #" + detalleArea.areasIdArea;
-    }
-    return "Préstamo #" + prestamo.id;
+
+    paginaHistorial = datos.page;
+    pintarHistorial(datos.content);
+    pintarPaginador(document.getElementById("reportesHistorialPaginador"), datos, cargarHistorialSeguro);
 }
 
-function pintarHistorial() {
+async function cargarHistorialSeguro(pagina) {
+    try {
+        await cargarHistorial(pagina);
+    } catch (error) {
+        console.error(error);
+        Swal.fire({ icon: "error", title: "No se pudo cargar la página", text: "Revisa tu conexión con el servidor." });
+    }
+}
+
+function pintarHistorial(prestamos) {
     const tbody = document.getElementById("reportesHistorialBody");
     if (!tbody) return;
 
-    const filas = cache.prestamos
-        .filter((p) => p.fechaDevolucion || (cache.estados.find((e) => e.id === p.estado) || {}).nombreEstado === "RECHAZADO")
-        .map((p) => {
-            const usuario = cache.usuarios.find((u) => u.id === p.usuario);
-            const estado = cache.estados.find((e) => e.id === p.estado);
-            return {
-                titulo: `${codigoPrestamo(p.id)} — ${productoDePrestamo(p)}`,
-                usuario: usuario ? `${usuario.nombreUsuario} ${usuario.apellidoUsuario}` : "-",
-                fecha: p.fechaDevolucion || p.fechaInicio,
-                tipo: estado ? estado.nombreEstado : "-",
-            };
-        })
-        .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-
-    if (filas.length === 0) {
+    if (prestamos.length === 0) {
         tbody.innerHTML = '<tr><td colspan="4" class="text-center atenuado">Aún no hay reportes generados.</td></tr>';
         return;
     }
 
-    tbody.innerHTML = filas.map((fila) => `
+    tbody.innerHTML = prestamos.map((p) => `
         <tr>
-            <td>${fila.titulo}</td>
-            <td>${fila.usuario}</td>
-            <td>${fila.fecha}</td>
-            <td><span class="estado ${fila.tipo === "RECHAZADO" ? "daniado" : "activo"}">${fila.tipo}</span></td>
+            <td>${codigoPrestamo(p.id)} — ${p.nombreProducto}</td>
+            <td>${p.nombreUsuario || "-"}</td>
+            <td>${p.fechaDevolucion || p.fechaInicio}</td>
+            <td><span class="estado ${p.nombreEstado === "RECHAZADO" ? "daniado" : "activo"}">${p.nombreEstado}</span></td>
         </tr>
     `).join("");
 }
 
-function itemsDanados() {
-    const idDanado = (cache.estadosHerramienta.find((e) => e.nombreEstadoHerramienta === "DAÑADO") || {}).id;
-    return cache.detallesHerramienta
-        .filter((d) => d.idEstadoHerramienta === idDanado)
-        .map((detalle) => {
-            const herramienta = cache.herramientas.find((h) => h.idHerramienta === detalle.idHerramienta);
-            return { detalle, nombre: herramienta ? herramienta.nombreHerramienta : "Equipo #" + detalle.idHerramienta };
-        });
+function convertirItemDanado(pieza) {
+    return {
+        detalle: {
+            idDetalle: pieza.idDetalle,
+            idHerramienta: pieza.idHerramienta,
+            idMarca: pieza.idMarca,
+            idEstadoHerramienta: pieza.idEstadoHerramienta,
+            codInv: pieza.codInv,
+        },
+        nombre: pieza.nombreHerramienta || "Equipo #" + pieza.idHerramienta,
+    };
+}
+
+async function cargarDanados(pagina = paginaDanados) {
+    const datos = await obtenerPiezasPagina({ page: pagina, size: TAMANO_PAGINA, estado: "DAÑADO" });
+
+    if (datos.content.length === 0 && pagina > 0) {
+        return cargarDanados(pagina - 1);
+    }
+
+    paginaDanados = datos.page;
+    danadosCargados = true;
+    cache.danados = datos.content.map(convertirItemDanado);
+    pintarGenerados();
+    pintarPaginador(document.getElementById("reportesGeneradosPaginador"), datos, cargarDanadosSeguro);
+}
+
+async function cargarDanadosSeguro(pagina) {
+    try {
+        await cargarDanados(pagina);
+    } catch (error) {
+        console.error(error);
+        Swal.fire({ icon: "error", title: "No se pudo cargar la página", text: "Revisa tu conexión con el servidor." });
+    }
+}
+
+function buscarItemDanado(idDetalle) {
+    return cache.danados.find(({ detalle }) => detalle.idDetalle === idDetalle) || informacionSeleccion.get(idDetalle) || null;
 }
 
 function pintarGenerados() {
     const grid = document.getElementById("reportesGeneradosGrid");
     if (!grid) return;
 
-    const items = itemsDanados();
+    const items = cache.danados;
 
     if (items.length === 0) {
         grid.innerHTML = '<p class="atenuado">No hay equipos dañados reportados.</p>';
@@ -162,7 +162,7 @@ function descargarArchivo(nombre, contenido, tipoMime) {
 }
 
 function exportarDanio(idDetalle, formato) {
-    const item = itemsDanados().find(({ detalle }) => detalle.idDetalle === idDetalle);
+    const item = buscarItemDanado(idDetalle);
     if (!item) return;
 
     const contenido = contenidoReporte(item.detalle, item.nombre);
@@ -185,7 +185,7 @@ function exportarDanio(idDetalle, formato) {
 }
 
 async function resolverDanio(idDetalle) {
-    const item = itemsDanados().find(({ detalle }) => detalle.idDetalle === idDetalle);
+    const item = buscarItemDanado(idDetalle);
     if (!item) return;
 
     const confirmacion = await Swal.fire({
@@ -210,6 +210,9 @@ async function resolverDanio(idDetalle) {
             idEstadoHerramienta: estadoDisponible.id,
             codInv: item.detalle.codInv,
         });
+        seleccionados.delete(idDetalle);
+        informacionSeleccion.delete(idDetalle);
+        actualizarContadorSeleccion();
         Swal.fire({ icon: "success", title: "Equipo actualizado", confirmButtonColor: "#28a745" });
         await recargarVista();
     } catch (error) {
@@ -251,9 +254,12 @@ function alternarSeleccion(idDetalle, marcado) {
     const tarjeta = document.querySelector(`.tarjeta-devolucion[data-iddetalle="${idDetalle}"]`);
     if (marcado) {
         seleccionados.add(idDetalle);
+        const item = buscarItemDanado(idDetalle);
+        if (item) informacionSeleccion.set(idDetalle, item);
         if (tarjeta) tarjeta.classList.add("seleccionada");
     } else {
         seleccionados.delete(idDetalle);
+        informacionSeleccion.delete(idDetalle);
         if (tarjeta) tarjeta.classList.remove("seleccionada");
     }
     actualizarContadorSeleccion();
@@ -265,7 +271,7 @@ function exportarSeleccionados(formato) {
         return;
     }
 
-    const items = itemsDanados().filter(({ detalle }) => seleccionados.has(detalle.idDetalle));
+    const items = Array.from(seleccionados).map((id) => informacionSeleccion.get(id)).filter(Boolean);
     const contenido = items.map(({ detalle, nombre }) => contenidoReporte(detalle, nombre)).join("\n\n---\n\n");
 
     if (formato === "txt") {
@@ -293,6 +299,7 @@ function initBarraSeleccion() {
     function salirModoSeleccion() {
         modoSeleccion = false;
         seleccionados = new Set();
+        informacionSeleccion.clear();
         if (acciones) {
             acciones.classList.add("d-none");
             acciones.classList.remove("d-flex");
@@ -304,6 +311,7 @@ function initBarraSeleccion() {
     function entrarModoSeleccion() {
         modoSeleccion = true;
         seleccionados = new Set();
+        informacionSeleccion.clear();
         if (acciones) {
             acciones.classList.remove("d-none");
             acciones.classList.add("d-flex");
@@ -351,7 +359,7 @@ function initEventosGrid() {
 
         if (verBtn) {
             const idDetalle = Number(verBtn.dataset.verDanio);
-            const item = itemsDanados().find(({ detalle }) => detalle.idDetalle === idDetalle);
+            const item = buscarItemDanado(idDetalle);
             if (!item) return;
             document.getElementById("reportViewerTitle").textContent = "Daño reportado: " + item.nombre;
             document.getElementById("reportViewerContent").textContent = contenidoReporte(item.detalle, item.nombre);
@@ -368,12 +376,19 @@ function initEventosGrid() {
             resolverDanio(Number(resolverBtn.dataset.resolver));
         }
     });
+
+    // Los equipos dañados se cargan solo la primera vez que se abre esa pestaña.
+    const radioGenerados = document.getElementById("tabGenerados");
+    if (radioGenerados) {
+        radioGenerados.addEventListener("change", () => {
+            if (radioGenerados.checked && !danadosCargados) cargarDanadosSeguro(0);
+        });
+    }
 }
 
 async function recargarVista() {
-    await cargarCatalogos();
-    pintarHistorial();
-    pintarGenerados();
+    await cargarHistorial(paginaHistorial);
+    if (danadosCargados) await cargarDanados(paginaDanados);
 }
 
 async function renderReportsView() {
@@ -382,14 +397,21 @@ async function renderReportsView() {
 
     modoSeleccion = false;
     seleccionados = new Set();
+    informacionSeleccion.clear();
+    paginaHistorial = 0;
+    paginaDanados = 0;
+    danadosCargados = false;
+    cache.danados = [];
 
     try {
         await cargarCatalogos();
-        pintarHistorial();
-        pintarGenerados();
+        await cargarHistorial(0);
         initModalVisor();
         initEventosGrid();
         initBarraSeleccion();
+
+        const radioGenerados = document.getElementById("tabGenerados");
+        if (radioGenerados && radioGenerados.checked) await cargarDanadosSeguro(0);
     } catch (error) {
         console.error(error);
         tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">No se pudieron cargar los reportes. Revisa tu conexión con el servidor.</td></tr>';

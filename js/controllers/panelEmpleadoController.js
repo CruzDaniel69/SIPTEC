@@ -1,10 +1,8 @@
 import { usuarioActual, idUsuarioActual } from "../utils/sesion.js";
-import { obtenerPrestamos } from "../services/prestamoService.js";
-import { obtenerEstadosPrestamo } from "../services/estadoPrestamoService.js";
-import { obtenerHerramientas } from "../services/herramientaService.js";
-import { obtenerDetallePrestamoHerramientas } from "../services/detallePrestamoHerramientaService.js";
-import { obtenerAreas } from "../services/areaService.js";
-import { obtenerDetallePrestamoAreas } from "../services/detallePrestamoAreaService.js";
+import { obtenerPrestamosPagina } from "../services/prestamoService.js";
+import { pintarPaginador, TAMANO_PAGINA } from "../utils/paginacion.js";
+
+let paginaActivos = 0;
 
 
 function formatearFecha(fechaISO) {
@@ -29,76 +27,86 @@ function mostrarNombreBienvenida() {
     }
 }
 
+function fechaLocalISO(fecha) {
+    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+    const dia = String(fecha.getDate()).padStart(2, "0");
+    return `${fecha.getFullYear()}-${mes}-${dia}`;
+}
+
+function consultaActivos(extra = {}) {
+    return obtenerPrestamosPagina({
+        estados: ["APROBADO", "ENTREGADO"],
+        usuario: idUsuarioActual(),
+        sinDevolucion: true,
+        ...extra,
+    });
+}
+
+function pintarActivos(prestamos) {
+    const tbody = document.getElementById("misPrestamosActivosBody");
+    if (!tbody) return;
+
+    if (prestamos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center atenuado">No tienes préstamos activos.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = prestamos.map((prestamo) => {
+        let recurso = prestamo.nombreProducto;
+        if (prestamo.tipo === "Herramienta" && prestamo.idHerramienta) {
+            recurso += ` (x${prestamo.cantidad})`;
+        }
+
+        return `
+        <tr>
+            <td>${recurso}</td>
+            <td>${formatearFecha(prestamo.fechaInicio)}</td>
+            <td>${formatearFecha(prestamo.fechaEsperada)}</td>
+            <td><span class="estado ${claseEstadoPrestamo(prestamo.nombreEstado)}">${prestamo.nombreEstado}</span></td>
+        </tr>`;
+    }).join("");
+}
+
+async function cargarActivos(pagina = paginaActivos) {
+    const datos = await consultaActivos({ page: pagina, size: TAMANO_PAGINA });
+
+    if (datos.content.length === 0 && pagina > 0) {
+        return cargarActivos(pagina - 1);
+    }
+
+    paginaActivos = datos.page;
+    pintarActivos(datos.content);
+    pintarPaginador(document.getElementById("misActivosPaginador"), datos, async (destino) => {
+        try {
+            await cargarActivos(destino);
+        } catch (error) {
+            console.error(error);
+            Swal.fire({ icon: "error", title: "No se pudo cargar la página", text: "Revisa tu conexión con el servidor." });
+        }
+    });
+    return datos;
+}
+
 async function renderPanelEmpleadoView() {
     const statActivos = document.getElementById("statMisPrestamosActivos");
     if (!statActivos) return;
 
     mostrarNombreBienvenida();
+    paginaActivos = 0;
 
     try {
-        const [prestamos, estados, herramientas, detallesHerramienta, areas, detallesArea] = await Promise.all([
-            obtenerPrestamos(),
-            obtenerEstadosPrestamo(),
-            obtenerHerramientas(),
-            obtenerDetallePrestamoHerramientas(),
-            obtenerAreas().catch(() => []),
-            obtenerDetallePrestamoAreas().catch(() => []),
+        const limite = new Date();
+        limite.setDate(limite.getDate() + 3);
+
+        const [activos, porVencer, pendientes] = await Promise.all([
+            cargarActivos(0),
+            consultaActivos({ size: 5, vencenAntesDe: fechaLocalISO(limite) }),
+            obtenerPrestamosPagina({ size: 5, estados: ["PENDIENTE"], usuario: idUsuarioActual() }),
         ]);
 
-        const idUsuario = idUsuarioActual();
-        const misPrestamos = prestamos.filter((p) => p.usuario === idUsuario);
-
-        const estadoPorId = (id) => estados.find((e) => e.id === id);
-        const activos = misPrestamos.filter((p) => {
-            const estado = estadoPorId(p.estado);
-            return !p.fechaDevolucion && estado && ["APROBADO", "ENTREGADO"].includes(estado.nombreEstado);
-        });
-        const pendientes = misPrestamos.filter((p) => (estadoPorId(p.estado) || {}).nombreEstado === "PENDIENTE");
-
-        const hoy = new Date();
-        hoy.setHours(0, 0, 0, 0);
-        const porVencer = activos.filter((p) => {
-            if (!p.fechaEsperada) return false;
-            const dias = Math.round((new Date(p.fechaEsperada) - hoy) / 86400000);
-            return dias <= 3;
-        });
-
-        statActivos.textContent = activos.length;
-        document.getElementById("statPorVencer").textContent = porVencer.length;
-        document.getElementById("statMisPendientes").textContent = pendientes.length;
-
-        const tbody = document.getElementById("misPrestamosActivosBody");
-        if (tbody) {
-            if (activos.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center atenuado">No tienes préstamos activos.</td></tr>';
-            } else {
-                tbody.innerHTML = activos.map((prestamo) => {
-                    const estado = estadoPorId(prestamo.estado);
-                    const detalleHerramienta = detallesHerramienta.find((d) => d.prestamo === prestamo.id);
-                    const detalleArea = detallesArea.find((d) => d.prestamoIdPrestamo === prestamo.id);
-
-                    let recurso = "-";
-                    if (detalleHerramienta) {
-                        const herramienta = herramientas.find((h) => h.idHerramienta === detalleHerramienta.herramienta);
-                        const totalPiezas = detallesHerramienta
-                            .filter((d) => d.prestamo === prestamo.id)
-                            .reduce((suma, d) => suma + (d.cantidad || 1), 0);
-                        recurso = (herramienta ? herramienta.nombreHerramienta : "Herramienta") + ` (x${totalPiezas})`;
-                    } else if (detalleArea) {
-                        const area = areas.find((a) => a.id === detalleArea.areasIdArea);
-                        recurso = area ? area.nombreArea : "Área";
-                    }
-
-                    return `
-                    <tr>
-                        <td>${recurso}</td>
-                        <td>${formatearFecha(prestamo.fechaInicio)}</td>
-                        <td>${formatearFecha(prestamo.fechaEsperada)}</td>
-                        <td><span class="estado ${claseEstadoPrestamo(estado ? estado.nombreEstado : "")}">${estado ? estado.nombreEstado : "-"}</span></td>
-                    </tr>`;
-                }).join("");
-            }
-        }
+        statActivos.textContent = activos.totalElements;
+        document.getElementById("statPorVencer").textContent = porVencer.totalElements;
+        document.getElementById("statMisPendientes").textContent = pendientes.totalElements;
     } catch (error) {
         console.error(error);
         Swal.fire({ icon: "error", title: "No se pudo cargar el panel", text: "Revisa tu conexión con el servidor." });

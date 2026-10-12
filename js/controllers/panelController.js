@@ -1,11 +1,6 @@
 import { usuarioActual } from "../utils/sesion.js";
-import { obtenerDetallesHerramienta } from "../services/detalleHerramientaService.js";
-import { obtenerEstadosHerramienta } from "../services/estadoHerramientaService.js";
-import { obtenerPrestamos } from "../services/prestamoService.js";
-import { obtenerEstadosPrestamo } from "../services/estadoPrestamoService.js";
-import { obtenerDetallePrestamoHerramientas } from "../services/detallePrestamoHerramientaService.js";
-import { obtenerHerramientas } from "../services/herramientaService.js";
-import { obtenerUsuarios } from "../services/usuarioService.js";
+import { obtenerPrestamosPagina } from "../services/prestamoService.js";
+import { obtenerResumenDashboard } from "../services/dashboardService.js";
 
 function formatearFecha(fechaISO) {
     if (!fechaISO) return "-";
@@ -30,25 +25,23 @@ function fechaLocalISO(fecha) {
     return `${fecha.getFullYear()}-${mes}-${dia}`;
 }
 
-function pintarGraficoSemanal(prestamos, estadosPrestamo) {
-    const contenedor = document.getElementById("graficoSemanal");
-    if (!contenedor) return;
-
+function diasDeLaSemanaActual() {
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
     const diasDesdeLunes = (hoy.getDay() + 6) % 7;
     const lunes = new Date(hoy);
     lunes.setDate(hoy.getDate() - diasDesdeLunes);
 
-    const diasSemana = Array.from({ length: 7 }, (_, i) => {
+    return Array.from({ length: 7 }, (_, i) => {
         const dia = new Date(lunes);
         dia.setDate(lunes.getDate() + i);
         return fechaLocalISO(dia);
     });
+}
 
-    const rechazado = estadosPrestamo.find((e) => e.nombreEstado === "RECHAZADO");
-    const conteos = diasSemana.map((iso) =>
-        prestamos.filter((p) => p.fechaInicio === iso && (!rechazado || p.estado !== rechazado.id)).length);
+function pintarGraficoSemanal(conteos, diasSemana) {
+    const contenedor = document.getElementById("graficoSemanal");
+    if (!contenedor) return;
 
     const maximo = Math.max(...conteos, 1);
     contenedor.innerHTML = conteos.map((cantidad) =>
@@ -69,51 +62,30 @@ async function renderPanelView() {
     mostrarNombreBienvenida();
 
     try {
-        const [detalles, estadosHerramienta, prestamos, estadosPrestamo, detallesPrestamo, herramientas, usuarios] = await Promise.all([
-            obtenerDetallesHerramienta(),
-            obtenerEstadosHerramienta(),
-            obtenerPrestamos(),
-            obtenerEstadosPrestamo(),
-            obtenerDetallePrestamoHerramientas(),
-            obtenerHerramientas(),
-            obtenerUsuarios(),
+        const diasSemana = diasDeLaSemanaActual();
+
+        const [resumen, recientes] = await Promise.all([
+            obtenerResumenDashboard(diasSemana[0]),
+            obtenerPrestamosPagina({ page: 0, size: 5, estados: ["APROBADO", "ENTREGADO", "DEVUELTO", "RECHAZADO"] }),
         ]);
 
-        const idEstado = (nombre) => (estadosHerramienta.find((e) => e.nombreEstadoHerramienta === nombre) || {}).id;
-        const idDisponible = idEstado("DISPONIBLE");
-        const idEnPrestamo = idEstado("EN PRESTAMO");
-        const idDanado = idEstado("DAÑADO");
+        const cantDisponibles = resumen.disponibles;
+        const cantPrestados = resumen.prestados;
+        const cantDanados = resumen.danados;
+        const totalDetalles = resumen.totalPiezas || 1;
 
-        const totalStock = herramientas.reduce((suma, h) => suma + (h.stock || 0), 0);
-        const cantDisponibles = detalles.filter((d) => d.idEstadoHerramienta === idDisponible).length;
-        const cantPrestados = detalles.filter((d) => d.idEstadoHerramienta === idEnPrestamo).length;
-        const cantDanados = detalles.filter((d) => d.idEstadoHerramienta === idDanado).length;
-        const totalDetalles = detalles.length || 1;
-
-        const estadosActivos = ["PENDIENTE", "APROBADO", "ENTREGADO"];
-        const prestamosActivos = prestamos.filter((p) => {
-            if (p.fechaDevolucion) return false;
-            const estado = estadosPrestamo.find((e) => e.id === p.estado);
-            return estado && estadosActivos.includes(estado.nombreEstado);
-        });
-
-        document.getElementById("statTotalImplementos").textContent = totalStock;
-        document.getElementById("statPrestamosActivos").textContent = prestamosActivos.length;
+        document.getElementById("statTotalImplementos").textContent = resumen.totalStock;
+        document.getElementById("statPrestamosActivos").textContent = resumen.prestamosActivos;
         document.getElementById("statDevolucionesPendientes").textContent = cantPrestados;
         document.getElementById("statDisponibles").textContent = cantDisponibles;
 
         const badgePendientesAprobar = document.getElementById("badgePendientesAprobar");
         if (badgePendientesAprobar) {
-            const cantPendientesAprobar = prestamos.filter((p) => {
-                const estado = estadosPrestamo.find((e) => e.id === p.estado);
-                return estado && estado.nombreEstado === "PENDIENTE";
-            }).length;
-
-            badgePendientesAprobar.textContent = cantPendientesAprobar;
-            badgePendientesAprobar.hidden = cantPendientesAprobar === 0;
+            badgePendientesAprobar.textContent = resumen.pendientesAprobar;
+            badgePendientesAprobar.hidden = resumen.pendientesAprobar === 0;
         }
 
-        pintarGraficoSemanal(prestamos, estadosPrestamo);
+        pintarGraficoSemanal(resumen.semana, diasSemana);
 
         const pctDisponibles = Math.round((cantDisponibles / totalDetalles) * 100);
         const pctPrestados = Math.round((cantPrestados / totalDetalles) * 100);
@@ -132,33 +104,19 @@ async function renderPanelView() {
 
         const tbody = document.getElementById("actividadRecienteBody");
         if (tbody) {
-            const recientes = prestamos
-                .filter((p) => {
-                    const estado = estadosPrestamo.find((e) => e.id === p.estado);
-                    return estado && estado.nombreEstado !== "PENDIENTE";
-                })
-                .sort((a, b) => new Date(b.fechaInicio) - new Date(a.fechaInicio))
-                .slice(0, 5);
-
-            if (recientes.length === 0) {
+            if (recientes.content.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="5" class="text-center atenuado">Aún no hay actividad registrada.</td></tr>';
             } else {
-                tbody.innerHTML = recientes.map((prestamo) => {
-                    const usuario = usuarios.find((u) => u.id === prestamo.usuario);
-                    const detallePrestamo = detallesPrestamo.find((d) => d.prestamo === prestamo.id);
-                    const herramienta = detallePrestamo ? herramientas.find((h) => h.idHerramienta === detallePrestamo.herramienta) : null;
-                    const estado = estadosPrestamo.find((e) => e.id === prestamo.estado);
-                    const mapa = { PENDIENTE: "pendiente", APROBADO: "activo", ENTREGADO: "prestado", DEVUELTO: "devuelto", RECHAZADO: "daniado" };
+                const mapa = { PENDIENTE: "pendiente", APROBADO: "activo", ENTREGADO: "prestado", DEVUELTO: "devuelto", RECHAZADO: "daniado" };
 
-                    return `
+                tbody.innerHTML = recientes.content.map((prestamo) => `
                     <tr>
-                        <td><i class="bi bi-tools me-2"></i>${herramienta ? herramienta.nombreHerramienta : "Área asignada"}</td>
-                        <td>${usuario ? `${usuario.nombreUsuario} ${usuario.apellidoUsuario}` : "-"}</td>
+                        <td><i class="bi bi-tools me-2"></i>${prestamo.nombreProducto}</td>
+                        <td>${prestamo.nombreUsuario || "-"}</td>
                         <td>${formatearFecha(prestamo.fechaInicio)}</td>
                         <td>${formatearFecha(prestamo.fechaDevolucion)}</td>
-                        <td><span class="estado ${mapa[estado ? estado.nombreEstado : ""] || ""}">${estado ? estado.nombreEstado : "-"}</span></td>
-                    </tr>`;
-                }).join("");
+                        <td><span class="estado ${mapa[prestamo.nombreEstado] || ""}">${prestamo.nombreEstado}</span></td>
+                    </tr>`).join("");
             }
         }
     } catch (error) {

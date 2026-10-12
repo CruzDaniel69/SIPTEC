@@ -98,3 +98,52 @@ export async function eliminarPrestamo(id) {
         throw error;
     }
 }
+
+export async function obtenerPrestamosPagina({
+    page = 0,
+    size = 10,
+    estados = [],
+    usuario = 0,
+    sinDevolucion = false,
+    vencenAntesDe = "",
+    desde = "",
+    hasta = "",
+    campoFecha = "inicio",
+    orden = "",
+} = {}) {
+    const parametros = new URLSearchParams({
+        page,
+        size,
+        estados: estados.join(","),
+        usuario,
+        sinDevolucion,
+        vencenAntesDe,
+        desde,
+        hasta,
+        campoFecha,
+        orden,
+    });
+
+    const response = await fetch(`${API_URL}/pagina?${parametros}`, { credentials: "include" });
+
+    if (!response.ok) {
+        throw new Error("Error al obtener la página de préstamos: " + response.status);
+    }
+
+    const resultado = await response.json();
+    return resultado.data;
+}
+
+export async function obtenerPrestamoActivoPorPieza(idDetalle) {
+    const response = await fetch(`${API_URL}/activo-por-pieza/${idDetalle}`, { credentials: "include" });
+
+    if (response.status === 404) {
+        return null;
+    }
+    if (!response.ok) {
+        throw new Error("Error al buscar el préstamo activo del equipo: " + response.status);
+    }
+
+    const resultado = await response.json();
+    return resultado.data;
+}

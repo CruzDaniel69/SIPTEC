@@ -98,3 +98,15 @@ export async function eliminarUsuario(id) {
         throw error;
     }
 }
+
+export async function obtenerUsuariosPagina({ page = 0, size = 10, q = "" } = {}) {
+    const parametros = new URLSearchParams({ page, size, q });
+    const response = await fetch(`${API_URL}?${parametros}`, { credentials: "include" });
+
+    if (!response.ok) {
+        throw new Error("Error al obtener la página de usuarios: " + response.status);
+    }
+
+    const resultado = await response.json();
+    return resultado.data;
+}

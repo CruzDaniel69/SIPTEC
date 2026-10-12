@@ -1,19 +1,18 @@
-import { obtenerPrestamos, actualizarPrestamo } from "../services/prestamoService.js";
+import { obtenerPrestamosPagina, actualizarPrestamo } from "../services/prestamoService.js";
 import { obtenerEstadosPrestamo } from "../services/estadoPrestamoService.js";
-import { obtenerUsuarios } from "../services/usuarioService.js";
-import { obtenerHerramientas } from "../services/herramientaService.js";
-import { obtenerDetallesHerramienta, actualizarDetalleHerramienta } from "../services/detalleHerramientaService.js";
-import { obtenerDetallePrestamoHerramientas } from "../services/detallePrestamoHerramientaService.js";
-import { obtenerAreas } from "../services/areaService.js";
-import { obtenerDetallePrestamoAreas } from "../services/detallePrestamoAreaService.js";
+import { actualizarDetalleHerramienta } from "../services/detalleHerramientaService.js";
 import { obtenerEstadosHerramienta } from "../services/estadoHerramientaService.js";
+import { pintarPaginador, TAMANO_PAGINA } from "../utils/paginacion.js";
 import { puedeGestionar } from "../utils/rol.js";
 
-const cache = {
-    prestamos: [], estados: [], usuarios: [], herramientas: [], detallesHerramienta: [],
-    detallesPrestamoHerramienta: [], areas: [], detallesPrestamoArea: [], estadosHerramienta: [],
+const cache = { estados: [], estadosHerramienta: [] };
+
+const LISTAS = {
+    prestamos: { estados: ["PENDIENTE", "APROBADO"], sinDevolucion: false, paginador: "loansPaginador", pagina: 0, filas: [], cargada: false },
+    devoluciones: { estados: ["APROBADO", "ENTREGADO"], sinDevolucion: true, paginador: "devolucionesPaginador", pagina: 0, filas: [], cargada: false },
+    historial: { estados: ["DEVUELTO", "RECHAZADO"], sinDevolucion: false, paginador: "historialPaginador", pagina: 0, filas: [], cargada: false },
 };
-let prestamoSeleccionado = null;
+
 let modalesListos = false;
 
 function codigoPrestamo(id) {
@@ -26,95 +25,97 @@ function claseEstadoPrestamo(nombre) {
 }
 
 async function cargarCatalogos() {
-    const [prestamos, estados, usuarios, herramientas, detallesHerramienta, detallesPrestamoHerramienta, areas, detallesPrestamoArea, estadosHerramienta] = await Promise.all([
-        obtenerPrestamos(),
+    const [estados, estadosHerramienta] = await Promise.all([
         obtenerEstadosPrestamo(),
-        obtenerUsuarios(),
-        obtenerHerramientas(),
-        obtenerDetallesHerramienta(),
-        obtenerDetallePrestamoHerramientas(),
-        obtenerAreas().catch(() => []),
-        obtenerDetallePrestamoAreas().catch(() => []),
         obtenerEstadosHerramienta(),
     ]);
 
-    cache.prestamos = prestamos || [];
     cache.estados = estados || [];
-    cache.usuarios = usuarios || [];
-    cache.herramientas = herramientas || [];
-    cache.detallesHerramienta = detallesHerramienta || [];
-    cache.detallesPrestamoHerramienta = detallesPrestamoHerramienta || [];
-    cache.areas = areas || [];
-    cache.detallesPrestamoArea = detallesPrestamoArea || [];
     cache.estadosHerramienta = estadosHerramienta || [];
 }
 
-function construirFilaPrestamo(prestamo) {
-    const usuario = cache.usuarios.find((u) => u.id === prestamo.usuario);
-    const estado = cache.estados.find((e) => e.id === prestamo.estado);
-    const detallesPrestamo = cache.detallesPrestamoHerramienta.filter((d) => d.prestamo === prestamo.id);
-    const detalleHerramienta = detallesPrestamo[0];
-    const detalleArea = cache.detallesPrestamoArea.find((d) => d.prestamoIdPrestamo === prestamo.id);
+function construirFila(dto) {
+    const piezas = dto.piezas || [];
+    const esHerramienta = dto.tipo === "Herramienta";
 
-    let tipo = "Herramienta";
-    let productoArea = "-";
-    let cantidad = null;
     let detalleTexto = "";
-    let unidades = [];
-
-    if (detalleHerramienta) {
-        const herramienta = cache.herramientas.find((h) => h.idHerramienta === detalleHerramienta.herramienta);
-        tipo = "Herramienta";
-        productoArea = herramienta ? herramienta.nombreHerramienta : "Herramienta #" + detalleHerramienta.herramienta;
-        cantidad = detallesPrestamo.reduce((suma, d) => suma + (d.cantidad || 1), 0);
-        unidades = unidadesDelPrestamo(detallesPrestamo);
-        detalleTexto = detallesPrestamo.some((d) => d.detalleHerramienta)
-            ? unidades.map((u) => u.codInv).join(", ")
-            : "x" + cantidad;
-    } else if (detalleArea) {
-        const area = cache.areas.find((a) => a.id === detalleArea.areasIdArea);
-        tipo = "Área";
-        productoArea = area ? area.nombreArea : "Área #" + detalleArea.areasIdArea;
+    if (esHerramienta && dto.idHerramienta) {
+        detalleTexto = dto.piezasAsignadas && piezas.length > 0
+            ? piezas.map((p) => p.codInv).join(", ")
+            : "x" + dto.cantidad;
     }
 
     return {
-        id: prestamo.id,
-        codigo: codigoPrestamo(prestamo.id),
-        nombreUsuario: usuario ? `${usuario.nombreUsuario} ${usuario.apellidoUsuario}` : "Usuario #" + prestamo.usuario,
-        fechaInicio: prestamo.fechaInicio,
-        fechaEsperada: prestamo.fechaEsperada,
-        fechaDevolucion: prestamo.fechaDevolucion,
-        tipo,
-        productoArea,
-        cantidad,
+        id: dto.id,
+        codigo: codigoPrestamo(dto.id),
+        idUsuario: dto.idUsuario,
+        nombreUsuario: dto.nombreUsuario,
+        fechaInicio: dto.fechaInicio,
+        fechaEsperada: dto.fechaEsperada,
+        fechaDevolucion: dto.fechaDevolucion,
+        tipo: dto.tipo,
+        productoArea: dto.nombreProducto,
+        cantidad: dto.cantidad,
         detalleTexto,
-        unidades,
-        idEstado: prestamo.estado,
-        nombreEstado: estado ? estado.nombreEstado : "DESCONOCIDO",
-        detalleHerramienta,
+        unidades: piezas.map((p) => ({
+            idDetalle: p.idDetalle,
+            idHerramienta: p.idHerramienta,
+            idMarca: p.idMarca,
+            codInv: p.codInv,
+        })),
+        idEstado: dto.idEstado,
+        nombreEstado: dto.nombreEstado,
     };
 }
 
-function unidadesDelPrestamo(detallesPrestamo) {
-    const unidades = [];
-    detallesPrestamo.forEach((detalle) => {
-        const unidad = detalle.detalleHerramienta
-            ? cache.detallesHerramienta.find((u) => u.idDetalle === detalle.detalleHerramienta)
-            : cache.detallesHerramienta.find((u) => u.idHerramienta === detalle.herramienta);
-        if (unidad && !unidades.some((u) => u.idDetalle === unidad.idDetalle)) unidades.push(unidad);
-    });
-    return unidades;
+function buscarFila(id) {
+    for (const lista of Object.values(LISTAS)) {
+        const fila = lista.filas.find((f) => f.id === id);
+        if (fila) return fila;
+    }
+    return null;
 }
 
-function construirFilas() {
-    return cache.prestamos.map(construirFilaPrestamo);
+function pintarLista(clave) {
+    if (clave === "prestamos") pintarTablaPrestamos();
+    if (clave === "devoluciones") pintarDevoluciones();
+    if (clave === "historial") pintarHistorial();
+}
+
+async function cargarLista(clave, pagina = LISTAS[clave].pagina) {
+    const lista = LISTAS[clave];
+    const datos = await obtenerPrestamosPagina({
+        page: pagina,
+        size: TAMANO_PAGINA,
+        estados: lista.estados,
+        sinDevolucion: lista.sinDevolucion,
+    });
+
+    if (datos.content.length === 0 && pagina > 0) {
+        return cargarLista(clave, pagina - 1);
+    }
+
+    lista.pagina = datos.page;
+    lista.filas = datos.content.map(construirFila);
+    lista.cargada = true;
+    pintarLista(clave);
+    pintarPaginador(document.getElementById(lista.paginador), datos, (destino) => cargarListaSegura(clave, destino));
+}
+
+async function cargarListaSegura(clave, pagina) {
+    try {
+        await cargarLista(clave, pagina);
+    } catch (error) {
+        console.error(error);
+        Swal.fire({ icon: "error", title: "No se pudo cargar la página", text: "Revisa tu conexión con el servidor." });
+    }
 }
 
 function pintarTablaPrestamos() {
     const tbody = document.getElementById("loansTableBody");
     if (!tbody) return;
 
-    const filas = construirFilas().filter((f) => f.nombreEstado === "PENDIENTE" || f.nombreEstado === "APROBADO");
+    const filas = LISTAS.prestamos.filas;
 
     if (filas.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" class="text-center atenuado">No hay préstamos por revisar.</td></tr>';
@@ -172,7 +173,7 @@ async function cambiarEstadoPrestamo(fila, nombreEstado) {
 
     try {
         await actualizarPrestamo(fila.id, {
-            usuario: cache.prestamos.find((p) => p.id === fila.id).usuario,
+            usuario: fila.idUsuario,
             fechaInicio: fila.fechaInicio,
             fechaEsperada: fila.fechaEsperada,
             fechaDevolucion: fila.fechaDevolucion,
@@ -205,7 +206,7 @@ function pintarDevoluciones() {
     const grid = document.getElementById("devolucionesGrid");
     if (!grid) return;
 
-    const filas = construirFilas().filter((f) => (f.nombreEstado === "APROBADO" || f.nombreEstado === "ENTREGADO") && !f.fechaDevolucion);
+    const filas = LISTAS.devoluciones.filas;
 
     if (filas.length === 0) {
         grid.innerHTML = '<p class="atenuado">No hay devoluciones pendientes.</p>';
@@ -243,7 +244,7 @@ async function marcarDevuelto(idPrestamo, idsUnidadesDanadas = []) {
         return;
     }
 
-    const fila = construirFilas().find((f) => f.id === idPrestamo);
+    const fila = buscarFila(idPrestamo);
     if (!fila) return;
 
     const estadoDevuelto = cache.estados.find((e) => e.nombreEstado === "DEVUELTO");
@@ -267,11 +268,10 @@ async function marcarDevuelto(idPrestamo, idsUnidadesDanadas = []) {
     }
 
     try {
-        const prestamoOriginal = cache.prestamos.find((p) => p.id === idPrestamo);
         await actualizarPrestamo(idPrestamo, {
-            usuario: prestamoOriginal.usuario,
-            fechaInicio: prestamoOriginal.fechaInicio,
-            fechaEsperada: prestamoOriginal.fechaEsperada,
+            usuario: fila.idUsuario,
+            fechaInicio: fila.fechaInicio,
+            fechaEsperada: fila.fechaEsperada,
             fechaDevolucion: new Date().toISOString().split("T")[0],
             estado: estadoDevuelto.id,
         });
@@ -303,9 +303,7 @@ function pintarHistorial() {
     const tbody = document.getElementById("historialTableBody");
     if (!tbody) return;
 
-    const filas = construirFilas()
-        .filter((f) => f.nombreEstado === "DEVUELTO" || f.nombreEstado === "RECHAZADO")
-        .sort((a, b) => new Date(b.fechaInicio) - new Date(a.fechaInicio));
+    const filas = LISTAS.historial.filas;
 
     if (filas.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" class="text-center atenuado">Aún no hay historial de préstamos.</td></tr>';
@@ -336,7 +334,7 @@ function initModalDamage() {
         document.getElementById("damageItemSummary").textContent = boton.dataset.resumen || "";
         document.getElementById("damageDescription").value = "";
 
-        const fila = construirFilas().find((f) => f.id === Number(boton.dataset.prestamo));
+        const fila = buscarFila(Number(boton.dataset.prestamo));
         const lista = document.getElementById("damageUnitsList");
         const unidades = fila ? fila.unidades : [];
         lista.innerHTML = unidades.map((u) => `
@@ -376,8 +374,8 @@ function initEventosTabla() {
             const fila = evento.target.closest("[data-fila], [data-ver]");
             if (!fila) return;
             const id = Number(fila.dataset.fila || fila.dataset.ver);
-            prestamoSeleccionado = construirFilas().find((f) => f.id === id);
-            if (prestamoSeleccionado) pintarDetalle(prestamoSeleccionado);
+            const prestamo = LISTAS.prestamos.filas.find((f) => f.id === id);
+            if (prestamo) pintarDetalle(prestamo);
         });
     }
 
@@ -389,6 +387,15 @@ function initEventosTabla() {
             marcarDevuelto(Number(boton.dataset.devolver), []);
         });
     }
+
+    // Las pestañas Devoluciones e Historial se cargan solo la primera vez que se abren.
+    [["tabDevoluciones", "devoluciones"], ["tabHistorial", "historial"]].forEach(([idRadio, clave]) => {
+        const radio = document.getElementById(idRadio);
+        if (!radio) return;
+        radio.addEventListener("change", () => {
+            if (radio.checked && !LISTAS[clave].cargada) cargarListaSegura(clave, 0);
+        });
+    });
 }
 
 function initModales() {
@@ -398,10 +405,9 @@ function initModales() {
 }
 
 async function recargarVista() {
-    await cargarCatalogos();
-    pintarTablaPrestamos();
-    pintarDevoluciones();
-    pintarHistorial();
+    const cargadas = Object.keys(LISTAS).filter((clave) => LISTAS[clave].cargada);
+    await Promise.all(cargadas.map((clave) => cargarLista(clave)));
+
     const panel = document.getElementById("loanDetailPanel");
     if (panel) panel.innerHTML = '<p class="atenuado">Selecciona un préstamo de la lista para ver el detalle.</p>';
 }
@@ -410,12 +416,21 @@ async function renderLoansView() {
     const tbody = document.getElementById("loansTableBody");
     if (!tbody) return;
 
+    Object.values(LISTAS).forEach((lista) => {
+        lista.pagina = 0;
+        lista.filas = [];
+        lista.cargada = false;
+    });
+
     try {
         await cargarCatalogos();
-        pintarTablaPrestamos();
-        pintarDevoluciones();
-        pintarHistorial();
+        await cargarLista("prestamos", 0);
         initEventosTabla();
+
+        const tabDevoluciones = document.getElementById("tabDevoluciones");
+        const tabHistorial = document.getElementById("tabHistorial");
+        if (tabDevoluciones && tabDevoluciones.checked) await cargarListaSegura("devoluciones", 0);
+        if (tabHistorial && tabHistorial.checked) await cargarListaSegura("historial", 0);
     } catch (error) {
         console.error(error);
         tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">No se pudieron cargar los préstamos. Revisa tu conexión con el servidor.</td></tr>';

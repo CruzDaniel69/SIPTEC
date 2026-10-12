@@ -1,37 +1,51 @@
-import { obtenerUsuarios, agregarUsuario, actualizarUsuario, eliminarUsuario } from "../services/usuarioService.js";
+import { obtenerUsuariosPagina, agregarUsuario, actualizarUsuario, eliminarUsuario } from "../services/usuarioService.js";
 import { obtenerRoles } from "../services/rolService.js";
 import { obtenerInstituciones } from "../services/institucionService.js";
+import { pintarPaginador, retrasar, TAMANO_PAGINA } from "../utils/paginacion.js";
 
 const cache = { usuarios: [], roles: [], instituciones: [] };
 let terminoBusqueda = "";
+let paginaActual = 0;
 let modalesListos = false;
 
 const patronCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 async function cargarCatalogos() {
-    const [usuarios, roles, instituciones] = await Promise.all([
-        obtenerUsuarios(),
+    const [roles, instituciones] = await Promise.all([
         obtenerRoles(),
         obtenerInstituciones(),
     ]);
-    cache.usuarios = usuarios || [];
     cache.roles = roles || [];
     cache.instituciones = instituciones || [];
 }
 
-function usuariosFiltrados() {
-    if (!terminoBusqueda.trim()) return cache.usuarios;
-    const texto = terminoBusqueda.trim().toLowerCase();
-    return cache.usuarios.filter((usuario) =>
-        `${usuario.nombreUsuario} ${usuario.apellidoUsuario}`.toLowerCase().includes(texto) ||
-        usuario.correoUsuario.toLowerCase().includes(texto));
+async function cargarPagina(pagina = paginaActual) {
+    const datos = await obtenerUsuariosPagina({ page: pagina, size: TAMANO_PAGINA, q: terminoBusqueda });
+
+    if (datos.content.length === 0 && pagina > 0) {
+        return cargarPagina(pagina - 1);
+    }
+
+    paginaActual = datos.page;
+    cache.usuarios = datos.content;
+    pintarTabla();
+    pintarPaginador(document.getElementById("usersPaginador"), datos, cargarPaginaSegura);
+}
+
+async function cargarPaginaSegura(pagina) {
+    try {
+        await cargarPagina(pagina);
+    } catch (error) {
+        console.error(error);
+        Swal.fire({ icon: "error", title: "No se pudo cargar la página", text: "Revisa tu conexión con el servidor." });
+    }
 }
 
 function pintarTabla() {
     const tbody = document.getElementById("usersTableBody");
     if (!tbody) return;
 
-    const usuarios = usuariosFiltrados();
+    const usuarios = cache.usuarios;
 
     if (usuarios.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" class="text-center atenuado">No se encontraron usuarios.</td></tr>';
@@ -104,11 +118,6 @@ function initModalCrear() {
             Swal.fire({ icon: "warning", title: "Contraseña inválida", text: "La contraseña debe tener al menos 8 caracteres e incluir al menos un número." });
             return;
         }
-        if (cache.usuarios.some((u) => u.correoUsuario.toLowerCase() === correo.toLowerCase())) {
-            Swal.fire({ icon: "warning", title: "Correo en uso", text: "Ya existe un usuario con ese correo." });
-            return;
-        }
-
         try {
             await agregarUsuario({
                 nombreUsuario: nombre,
@@ -124,7 +133,7 @@ function initModalCrear() {
             await recargarVista();
         } catch (error) {
             console.error(error);
-            Swal.fire({ icon: "error", title: "No se pudo crear el usuario", text: "Ocurrió un error al conectar con el servidor.", confirmButtonColor: "#dc3545" });
+            Swal.fire({ icon: "error", title: "No se pudo crear el usuario", text: "Revisa los datos (por ejemplo, el correo podría estar en uso) o tu conexión con el servidor.", confirmButtonColor: "#dc3545" });
         }
     });
 }
@@ -238,16 +247,16 @@ function initAccionesTabla() {
 function initBusqueda() {
     const buscador = document.getElementById("usersSearch");
     if (!buscador) return;
+    const buscar = retrasar(() => cargarPaginaSegura(0));
     buscador.addEventListener("input", () => {
-        terminoBusqueda = buscador.value;
-        pintarTabla();
+        terminoBusqueda = buscador.value.trim();
+        buscar();
     });
 }
 
 async function recargarVista() {
     try {
-        await cargarCatalogos();
-        pintarTabla();
+        await cargarPagina(paginaActual);
     } catch (error) {
         console.error(error);
     }
@@ -258,10 +267,11 @@ async function renderUsersView() {
     if (!tbody) return;
 
     terminoBusqueda = "";
+    paginaActual = 0;
 
     try {
         await cargarCatalogos();
-        pintarTabla();
+        await cargarPagina(0);
         initAccionesTabla();
         initBusqueda();
     } catch (error) {

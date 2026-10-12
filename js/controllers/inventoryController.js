@@ -1,17 +1,21 @@
-import { obtenerHerramientas, agregarHerramienta, actualizarHerramienta, eliminarHerramienta } from "../services/herramientaService.js";
-import { obtenerDetallesHerramienta, agregarDetalleHerramienta, actualizarDetalleHerramienta, eliminarDetalleHerramienta } from "../services/detalleHerramientaService.js";
+import { agregarHerramienta, actualizarHerramienta, eliminarHerramienta } from "../services/herramientaService.js";
+import { agregarDetalleHerramienta, actualizarDetalleHerramienta, eliminarDetalleHerramienta } from "../services/detalleHerramientaService.js";
 import { obtenerMarcas, agregarMarca, eliminarMarca } from "../services/marcaService.js";
 import { obtenerCategorias, agregarCategoria, eliminarCategoria } from "../services/categoriaService.js";
-import { obtenerHerramientaCategorias, agregarHerramientaCategoria, eliminarHerramientaCategoria } from "../services/herramientaCategoriaService.js";
+import { agregarHerramientaCategoria, eliminarHerramientaCategoria } from "../services/herramientaCategoriaService.js";
 import { obtenerEstadosHerramienta } from "../services/estadoHerramientaService.js";
 import { obtenerAreas, agregarArea, actualizarArea, eliminarArea } from "../services/areaService.js";
 import { obtenerTiposArea, agregarTipoArea } from "../services/tipoAreaService.js";
+import { obtenerPiezasPagina, obtenerCodigosExistentes, obtenerPrefijosEnUso, obtenerHerramientasPorArea } from "../services/inventarioService.js";
+import { pintarPaginador, retrasar, TAMANO_PAGINA } from "../utils/paginacion.js";
 import { puedeGestionar } from "../utils/rol.js";
 
-const cache = { herramientas: [], detalles: [], marcas: [], categorias: [], relCategorias: [], estados: [], areas: [], tiposArea: [] };
+const cache = { filas: [], prefijosEnUso: [], areasConteo: {}, marcas: [], categorias: [], estados: [], areas: [], tiposArea: [] };
 let filtroActual = "todo";
 let terminoBusqueda = "";
 let terminoBusquedaAreas = "";
+let paginaActual = 0;
+let paginaAreasActual = 0;
 let modalesListos = false;
 
 const patronCodigo = /^[A-Za-z0-9-]+$/;
@@ -29,87 +33,77 @@ function claseEstado(nombreEstado) {
 }
 
 async function cargarCatalogos() {
-    const [herramientas, detalles, marcas, categorias, relCategorias, estados, areas, tiposArea] = await Promise.all([
-        obtenerHerramientas(),
-        obtenerDetallesHerramienta(),
+    const [marcas, categorias, estados, areas, tiposArea, areasConteo, prefijos] = await Promise.all([
         obtenerMarcas(),
         obtenerCategorias(),
-        obtenerHerramientaCategorias(),
         obtenerEstadosHerramienta(),
         obtenerAreas().catch(() => []),
         obtenerTiposArea().catch(() => []),
+        obtenerHerramientasPorArea().catch(() => ({})),
+        obtenerPrefijosEnUso().catch(() => []),
     ]);
 
-    cache.herramientas = herramientas || [];
-    cache.detalles = detalles || [];
     cache.marcas = marcas || [];
     cache.categorias = categorias || [];
-    cache.relCategorias = relCategorias || [];
     cache.estados = estados || [];
     cache.areas = areas || [];
     cache.tiposArea = tiposArea || [];
+    cache.areasConteo = areasConteo || {};
+    cache.prefijosEnUso = prefijos || [];
 }
 
-function construirFilas() {
-    const filasPorPieza = [];
+const ESTADO_POR_FILTRO = { todo: "", disponible: "DISPONIBLE", prestado: "EN PRESTAMO", daniado: "DAÑADO" };
 
-    cache.herramientas.forEach((herramienta) => {
-        const piezas = cache.detalles.filter((d) => d.idHerramienta === herramienta.idHerramienta);
-        if (piezas.length === 0) {
-            filasPorPieza.push(construirFila(herramienta, null, herramienta.stock));
-        } else {
-            piezas.forEach((pieza) => filasPorPieza.push(construirFila(herramienta, pieza, piezas.length)));
-        }
-    });
-
-    return filasPorPieza;
-}
-
-function construirFila(herramienta, detalle, totalPiezas) {
-    const marca = detalle ? cache.marcas.find((m) => m.id === detalle.idMarca) : null;
-    const estado = detalle ? cache.estados.find((e) => e.id === detalle.idEstadoHerramienta) : null;
-    const relCategoria = cache.relCategorias.find((r) => r.idHerramienta === herramienta.idHerramienta);
-    const categoria = relCategoria ? cache.categorias.find((c) => c.id === relCategoria.idCategoria) : null;
-    const area = herramienta.idArea ? cache.areas.find((a) => a.id === herramienta.idArea) : null;
-
+function convertirPieza(pieza) {
     return {
-        idHerramienta: herramienta.idHerramienta,
-        idDetalle: detalle ? detalle.idDetalle : null,
-        codInv: detalle ? detalle.codInv : "-",
-        nombre: herramienta.nombreHerramienta,
-        stock: totalPiezas,
-        idArea: herramienta.idArea || "",
-        nombreArea: area ? area.nombreArea : "Sin asignar",
-        idMarca: detalle ? detalle.idMarca : "",
-        nombreMarca: marca ? marca.nombreMarca : "Sin marca",
-        idCategoria: categoria ? categoria.id : "",
-        nombreCategoria: categoria ? categoria.nombreCategoria : "Sin categoría",
-        idEstadoHerramienta: detalle ? detalle.idEstadoHerramienta : "",
-        nombreEstado: estado ? estado.nombreEstadoHerramienta : "DESCONOCIDO",
+        idHerramienta: pieza.idHerramienta,
+        idDetalle: pieza.idDetalle,
+        codInv: pieza.codInv,
+        nombre: pieza.nombreHerramienta,
+        stock: pieza.totalPiezas,
+        idArea: pieza.idArea || "",
+        nombreArea: pieza.nombreArea || "Sin asignar",
+        idMarca: pieza.idMarca,
+        nombreMarca: pieza.nombreMarca || "Sin marca",
+        idCategoria: pieza.idCategoria || "",
+        nombreCategoria: pieza.nombreCategoria || "Sin categoría",
+        idEstadoHerramienta: pieza.idEstadoHerramienta,
+        nombreEstado: pieza.nombreEstado || "DESCONOCIDO",
     };
 }
 
-function filasFiltradas() {
-    let filas = construirFilas();
+async function cargarPagina(pagina = paginaActual) {
+    const datos = await obtenerPiezasPagina({
+        page: pagina,
+        size: TAMANO_PAGINA,
+        q: terminoBusqueda,
+        estado: ESTADO_POR_FILTRO[filtroActual] || "",
+    });
 
-    if (filtroActual !== "todo") {
-        const mapa = { disponible: "DISPONIBLE", prestado: "EN PRESTAMO", daniado: "DAÑADO" };
-        filas = filas.filter((fila) => fila.nombreEstado === mapa[filtroActual]);
+    if (datos.content.length === 0 && pagina > 0) {
+        return cargarPagina(pagina - 1);
     }
 
-    if (terminoBusqueda.trim()) {
-        const texto = terminoBusqueda.trim().toLowerCase();
-        filas = filas.filter((fila) => fila.codInv.toLowerCase().includes(texto) || fila.nombre.toLowerCase().includes(texto));
-    }
+    paginaActual = datos.page;
+    cache.filas = datos.content.map(convertirPieza);
+    pintarTabla();
+    pintarPaginador(document.getElementById("inventoryPaginador"), datos, cargarPaginaSegura);
+}
 
-    return filas;
+async function cargarPaginaSegura(pagina) {
+    try {
+        await cargarPagina(pagina);
+    } catch (error) {
+        console.error(error);
+        Swal.fire({ icon: "error", title: "No se pudo cargar la página", text: "Revisa tu conexión con el servidor." });
+    }
 }
 
 function pintarTabla() {
     const tbody = document.getElementById("inventoryTableBody");
     if (!tbody) return;
 
-    const filas = filasFiltradas();
+    const filas = cache.filas;
     const puedeGestionarAqui = puedeGestionarInventario();
     const totalColumnas = puedeGestionarAqui ? 7 : 6;
 
@@ -342,9 +336,7 @@ const PREFIJOS_BASE = ["EQ", "HE", "TAL", "LAB"];
 const CLAVE_PREFIJOS = "siptec-prefijos-inventario";
 
 function prefijosEnUso() {
-    return cache.detalles
-        .map((d) => String(d.codInv || "").split("-")[0].toUpperCase())
-        .filter(Boolean);
+    return cache.prefijosEnUso;
 }
 
 function leerPrefijosGuardados() {
@@ -449,18 +441,36 @@ function pintarTablaAreas() {
     const tbody = document.getElementById("areasTableBody");
     if (!tbody) return;
 
-    const areas = areasFiltradas();
+    const todasLasAreas = areasFiltradas();
     const puedeGestionarAqui = puedeGestionarInventario();
     const totalColumnas = puedeGestionarAqui ? 4 : 3;
+    const paginadorAreas = document.getElementById("areasPaginador");
 
-    if (areas.length === 0) {
+    if (todasLasAreas.length === 0) {
         tbody.innerHTML = `<tr><td colspan="${totalColumnas}" class="text-center atenuado">No se encontraron áreas.</td></tr>`;
+        pintarPaginador(paginadorAreas, null, () => {});
         return;
     }
 
+    const totalPaginas = Math.ceil(todasLasAreas.length / TAMANO_PAGINA);
+    paginaAreasActual = Math.min(paginaAreasActual, totalPaginas - 1);
+    const inicio = paginaAreasActual * TAMANO_PAGINA;
+    const areas = todasLasAreas.slice(inicio, inicio + TAMANO_PAGINA);
+
+    pintarPaginador(paginadorAreas, {
+        page: paginaAreasActual,
+        size: TAMANO_PAGINA,
+        totalElements: todasLasAreas.length,
+        totalPages: totalPaginas,
+        content: areas,
+    }, (pagina) => {
+        paginaAreasActual = pagina;
+        pintarTablaAreas();
+    });
+
     tbody.innerHTML = areas.map((area) => {
         const tipo = cache.tiposArea.find((t) => t.id === area.tipoArea);
-        const cantidadAsignadas = cache.herramientas.filter((h) => h.idArea === area.id).length;
+        const cantidadAsignadas = cache.areasConteo[area.id] || 0;
 
         return `
         <tr>
@@ -585,7 +595,7 @@ function initModalEditarArea() {
             bootstrap.Modal.getOrCreateInstance(editModal).hide();
             Swal.fire({ icon: "success", title: "¡Cambios guardados!", confirmButtonColor: "#28a745" });
             pintarTablaAreas();
-            pintarTabla();
+            await cargarPaginaSegura(paginaActual);
         } catch (error) {
             console.error(error);
             Swal.fire({ icon: "error", title: "No se pudo actualizar el área", text: "Ocurrió un error al conectar con el servidor.", confirmButtonColor: "#dc3545" });
@@ -603,7 +613,7 @@ function initAccionesTablaAreas() {
 
         const id = Number(boton.dataset.eliminarArea);
 
-        if (cache.herramientas.some((h) => h.idArea === id)) {
+        if ((cache.areasConteo[id] || 0) > 0) {
             Swal.fire({ icon: "warning", title: "No se puede eliminar", text: "Hay herramientas asignadas a esta área. Reasígnalas antes de eliminarla." });
             return;
         }
@@ -637,6 +647,7 @@ function initBusquedaAreas() {
     if (!buscador) return;
     buscador.addEventListener("input", () => {
         terminoBusquedaAreas = buscador.value;
+        paginaAreasActual = 0;
         pintarTablaAreas();
     });
 }
@@ -668,11 +679,14 @@ function initModalCrear() {
         return Array.from({ length: piezas }, (_, i) => `${selectPrefijo.value}-${numeroInicial + i}`);
     }
 
-    function codigosRepetidos(codigos) {
-        return codigos.filter((c) => cache.detalles.some((d) => (d.codInv || "").toUpperCase() === c.toUpperCase()));
+    async function codigosRepetidos(codigos) {
+        return obtenerCodigosExistentes(codigos);
     }
 
-    function actualizarVistaPrevia() {
+    let versionVistaPrevia = 0;
+
+    async function actualizarVistaPrevia() {
+        const version = ++versionVistaPrevia;
         const codigos = generarCodigos();
         if (codigos.length === 0) {
             textoVistaPrevia.className = "atenuado";
@@ -680,20 +694,28 @@ function initModalCrear() {
             return;
         }
 
-        const repetidos = codigosRepetidos(codigos);
-        if (repetidos.length > 0) {
-            textoVistaPrevia.className = "text-danger";
-            textoVistaPrevia.textContent = "Ya existe: " + repetidos.join(", ");
-            return;
-        }
-
-        textoVistaPrevia.className = "atenuado";
-        textoVistaPrevia.textContent = codigos.length === 1
+        const resumen = codigos.length === 1
             ? "Se creará: " + codigos[0]
             : `Se crearán ${codigos.length} piezas: ${codigos[0]} al ${codigos[codigos.length - 1]}`;
+
+        textoVistaPrevia.className = "atenuado";
+        textoVistaPrevia.textContent = resumen;
+
+        try {
+            const repetidos = await codigosRepetidos(codigos);
+            if (version !== versionVistaPrevia) return;
+
+            if (repetidos.length > 0) {
+                textoVistaPrevia.className = "text-danger";
+                textoVistaPrevia.textContent = "Ya existe: " + repetidos.join(", ");
+            }
+        } catch (error) {
+            console.error(error);
+        }
     }
 
-    [selectPrefijo, inputNumero, inputPiezas].forEach((campo) => campo.addEventListener("input", actualizarVistaPrevia));
+    const vistaPreviaRetrasada = retrasar(actualizarVistaPrevia, 350);
+    [selectPrefijo, inputNumero, inputPiezas].forEach((campo) => campo.addEventListener("input", vistaPreviaRetrasada));
 
     itemModal.addEventListener("show.bs.modal", () => {
         form.reset();
@@ -734,7 +756,14 @@ function initModalCrear() {
         }
 
         const codigos = generarCodigos();
-        const repetidos = codigosRepetidos(codigos);
+        let repetidos = [];
+        try {
+            repetidos = await codigosRepetidos(codigos);
+        } catch (error) {
+            console.error(error);
+            Swal.fire({ icon: "error", title: "No se pudieron verificar los códigos", text: "Revisa tu conexión con el servidor." });
+            return;
+        }
         if (repetidos.length > 0) {
             Swal.fire({ icon: "warning", title: "Código repetido", text: "Estos códigos ya existen: " + repetidos.join(", ") + ". Cambia el número inicial." });
             return;
@@ -820,8 +849,17 @@ function initModalEditar() {
         return `${prefijo}-${numero}`.toUpperCase();
     }
 
-    function actualizarVistaPrevia() {
-        const idActual = Number(document.getElementById("editItemDetalleId").value);
+    let codigoOriginal = "";
+    let versionVistaPrevia = 0;
+
+    async function codigoRepetido(codigo) {
+        if (!codigo || codigo === codigoOriginal) return false;
+        const existentes = await obtenerCodigosExistentes([codigo]);
+        return existentes.length > 0;
+    }
+
+    async function actualizarVistaPrevia() {
+        const version = ++versionVistaPrevia;
         const codigo = codigoEditado();
 
         if (!codigo) {
@@ -830,18 +868,31 @@ function initModalEditar() {
             return;
         }
 
-        const repetido = cache.detalles.some((d) => d.idDetalle !== idActual && (d.codInv || "").toUpperCase() === codigo);
-        textoVistaPrevia.className = repetido ? "text-danger" : "atenuado";
-        textoVistaPrevia.textContent = repetido ? `Ya existe: ${codigo}` : `Quedará como: ${codigo}`;
+        textoVistaPrevia.className = "atenuado";
+        textoVistaPrevia.textContent = `Quedará como: ${codigo}`;
+
+        try {
+            const repetido = await codigoRepetido(codigo);
+            if (version !== versionVistaPrevia) return;
+
+            if (repetido) {
+                textoVistaPrevia.className = "text-danger";
+                textoVistaPrevia.textContent = `Ya existe: ${codigo}`;
+            }
+        } catch (error) {
+            console.error(error);
+        }
     }
 
-    [selectPrefijo, inputNumero].forEach((campo) => campo.addEventListener("input", actualizarVistaPrevia));
+    const vistaPreviaRetrasada = retrasar(actualizarVistaPrevia, 350);
+    [selectPrefijo, inputNumero].forEach((campo) => campo.addEventListener("input", vistaPreviaRetrasada));
 
     editModal.addEventListener("show.bs.modal", (evento) => {
         const boton = evento.relatedTarget;
         if (!boton) return;
 
         const codigoActual = String(boton.dataset.cod || "");
+        codigoOriginal = codigoActual.toUpperCase();
         const posicionGuion = codigoActual.indexOf("-");
         const prefijoActual = posicionGuion > 0 ? codigoActual.slice(0, posicionGuion).toUpperCase() : "";
         const numeroActual = posicionGuion > 0 ? codigoActual.slice(posicionGuion + 1) : codigoActual;
@@ -881,7 +932,7 @@ function initModalEditar() {
 
         const idHerramienta = Number(document.getElementById("editItemId").value);
         const idDetalleEditado = Number(document.getElementById("editItemDetalleId").value);
-        const detalle = cache.detalles.find((d) => d.idDetalle === idDetalleEditado);
+        const detalle = cache.filas.find((f) => f.idDetalle === idDetalleEditado);
         const codigo = codigoEditado();
         const nombre = document.getElementById("editItemName").value.trim();
         const marcaId = document.getElementById("editItemBrand").value;
@@ -902,8 +953,14 @@ function initModalEditar() {
             Swal.fire({ icon: "warning", title: "Código inválido", text: "El código solo admite letras, números y guiones." });
             return;
         }
-        if (cache.detalles.some((d) => d.idDetalle !== idDetalleEditado && (d.codInv || "").toUpperCase() === codigo)) {
-            Swal.fire({ icon: "warning", title: "Código repetido", text: "El código " + codigo + " ya está registrado en otro equipo." });
+        try {
+            if (await codigoRepetido(codigo)) {
+                Swal.fire({ icon: "warning", title: "Código repetido", text: "El código " + codigo + " ya está registrado en otro equipo." });
+                return;
+            }
+        } catch (error) {
+            console.error(error);
+            Swal.fire({ icon: "error", title: "No se pudo verificar el código", text: "Revisa tu conexión con el servidor." });
             return;
         }
         if (!nombre || !stock || stock < 1) {
@@ -946,7 +1003,7 @@ function initModalEditar() {
             }
 
             if (categoriaId && categoriaId !== "__nuevo__") {
-                const relActual = cache.relCategorias.find((r) => r.idHerramienta === idHerramienta);
+                const relActual = detalle && detalle.idCategoria ? { idCategoria: detalle.idCategoria } : null;
                 if (!relActual || String(relActual.idCategoria) !== String(categoriaId)) {
                     if (relActual) await eliminarHerramientaCategoria(relActual.idCategoria, idHerramienta).catch(() => {});
                     await agregarHerramientaCategoria({ idCategoria: Number(categoriaId), idHerramienta: idHerramienta });
@@ -984,9 +1041,9 @@ function initAccionesTabla() {
         const idDetalle = botonEliminar.dataset.detalleEliminar;
 
         const tienePieza = idDetalle && idDetalle !== "null";
-        const piezasDelEquipo = cache.detalles.filter((d) => d.idHerramienta === idHerramienta);
-        const esUltimaPieza = !tienePieza || piezasDelEquipo.length <= 1;
-        const pieza = tienePieza ? cache.detalles.find((d) => String(d.idDetalle) === String(idDetalle)) : null;
+        const pieza = tienePieza ? cache.filas.find((f) => String(f.idDetalle) === String(idDetalle)) : null;
+        const totalPiezas = pieza ? pieza.stock : 0;
+        const esUltimaPieza = !tienePieza || totalPiezas <= 1;
 
         const confirmacion = await Swal.fire({
             icon: "warning",
@@ -1006,19 +1063,17 @@ function initAccionesTabla() {
             }
 
             if (esUltimaPieza) {
-                const relCategoria = cache.relCategorias.find((r) => r.idHerramienta === idHerramienta);
-                if (relCategoria) {
-                    await eliminarHerramientaCategoria(relCategoria.idCategoria, idHerramienta).catch(() => {});
+                if (pieza && pieza.idCategoria) {
+                    await eliminarHerramientaCategoria(pieza.idCategoria, idHerramienta).catch(() => {});
                 }
                 await eliminarHerramienta(idHerramienta);
             } else {
-                const herramienta = cache.herramientas.find((h) => h.idHerramienta === idHerramienta);
                 await actualizarHerramienta(idHerramienta, {
                     idHerramienta: idHerramienta,
-                    nombreHerramienta: herramienta.nombreHerramienta,
-                    descripcionHerramienta: herramienta.descripcionHerramienta || "",
-                    stock: piezasDelEquipo.length - 1,
-                    idArea: herramienta.idArea || null,
+                    nombreHerramienta: pieza.nombre,
+                    descripcionHerramienta: "",
+                    stock: totalPiezas - 1,
+                    idArea: pieza.idArea || null,
                 });
             }
             Swal.fire({ icon: "success", title: "Eliminado correctamente", confirmButtonColor: "#28a745" });
@@ -1036,15 +1091,16 @@ function initFiltrosYBusqueda() {
             filtroActual = boton.dataset.filter;
             const toggle = boton.closest(".dropdown")?.querySelector(".dropdown-toggle");
             if (toggle) toggle.innerHTML = `<i class="bi bi-funnel"></i> ${boton.textContent}`;
-            pintarTabla();
+            cargarPaginaSegura(0);
         });
     });
 
     const buscador = document.getElementById("inventorySearch");
     if (buscador) {
+        const buscar = retrasar(() => cargarPaginaSegura(0));
         buscador.addEventListener("input", () => {
-            terminoBusqueda = buscador.value;
-            pintarTabla();
+            terminoBusqueda = buscador.value.trim();
+            buscar();
         });
     }
 }
@@ -1052,7 +1108,7 @@ function initFiltrosYBusqueda() {
 async function recargarVista() {
     try {
         await cargarCatalogos();
-        pintarTabla();
+        await cargarPagina(paginaActual);
         pintarTablaAreas();
     } catch (error) {
         console.error(error);
@@ -1066,10 +1122,12 @@ async function renderInventoryView() {
     filtroActual = "todo";
     terminoBusqueda = "";
     terminoBusquedaAreas = "";
+    paginaActual = 0;
+    paginaAreasActual = 0;
 
     try {
         await cargarCatalogos();
-        pintarTabla();
+        await cargarPagina(0);
         pintarTablaAreas();
         initFiltrosYBusqueda();
         initAccionesTabla();

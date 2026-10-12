@@ -1,3 +1,63 @@
+ .paginador {
+     display: flex;
+     flex-wrap: wrap;
+     align-items: center;
+     justify-content: space-between;
+     gap: 10px;
+     padding: 12px 4px 0;
+ }
+
+ .paginador:empty {
+     display: none;
+ }
+
+ .paginador-info {
+     font-size: 12px;
+     color: var(--ink-soft);
+ }
+
+ .paginador-botones {
+     display: flex;
+     flex-wrap: wrap;
+     align-items: center;
+     gap: 6px;
+ }
+
+ .paginador-botones button {
+     min-width: 34px;
+     height: 32px;
+     padding: 0 10px;
+     font-size: 12px;
+     font-weight: 600;
+     color: var(--ink);
+     background: var(--panel);
+     border: 1px solid var(--line);
+     border-radius: 9px;
+     cursor: pointer;
+     transition: background .12s ease, border-color .12s ease;
+ }
+
+ .paginador-botones button:hover:not(:disabled):not(.activa) {
+     background: var(--hover);
+     border-color: var(--blue);
+ }
+
+ .paginador-botones button.activa {
+     color: #fff;
+     background: var(--blue);
+     border-color: var(--blue);
+ }
+
+ .paginador-botones button:disabled {
+     opacity: .45;
+     cursor: not-allowed;
+ }
+
+ .paginador-puntos {
+     color: var(--ink-soft);
+     padding: 0 2px;
+ }
+
  .select-personalizado {
      position: relative;
      width: 100%;
