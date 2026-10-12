@@ -1,3 +1,4 @@
+import { fechasPrestamoValidas as fechasValidas, formatearFechaHora, ahoraLocalISO, aValorInput } from "../utils/fechas.js";
 import { idUsuarioActual } from "../utils/sesion.js";
 import { obtenerPrestamosPagina, agregarPrestamo } from "../services/prestamoService.js";
 import { obtenerEstadosPrestamo } from "../services/estadoPrestamoService.js";
@@ -43,18 +44,6 @@ function resolverPorNombre(texto, lista, campoNombre) {
         lista.find((item) => item[campoNombre].toLowerCase().includes(buscado));
 }
 
-function fechasValidas(inicioTexto, esperadaTexto) {
-    const inicio = new Date(inicioTexto);
-    const esperada = new Date(esperadaTexto);
-
-    if (esperada <= inicio) return { valido: false, mensaje: "La fecha esperada debe ser posterior a la fecha de inicio." };
-
-    const unMesDespues = new Date(inicio);
-    unMesDespues.setMonth(unMesDespues.getMonth() + 1);
-    if (esperada > unMesDespues) return { valido: false, mensaje: "El préstamo no puede exceder 1 mes desde el inicio." };
-
-    return { valido: true };
-}
 
 async function cargarCatalogos() {
     const [areas, estados] = await Promise.all([
@@ -153,7 +142,7 @@ function pintarMisPrestamos(prestamos) {
         return `
         <tr>
             <td class="etiqueta-codigo">${codigoPrestamo(prestamo.id)}</td>
-            <td>${prestamo.fechaInicio}</td>
+            <td>${formatearFechaHora(prestamo.fechaInicio)}</td>
             <td><span class="estado activo">${prestamo.tipo}</span></td>
             <td>${productoArea}</td>
             <td><span class="estado ${mapa[prestamo.nombreEstado] || ""}">${prestamo.nombreEstado}</span></td>
@@ -317,8 +306,8 @@ function initFormulario() {
     }
 
     if (fechaInicioInput) {
-        const hoy = new Date().toISOString().split("T")[0];
-        fechaInicioInput.min = hoy;
+        // Se puede pedir un préstamo para hoy mismo: el mínimo es el momento actual
+        fechaInicioInput.min = ahoraLocalISO();
         fechaInicioInput.addEventListener("change", () => {
             if (!fechaEsperadaInput || !fechaInicioInput.value) return;
 
@@ -326,7 +315,7 @@ function initFormulario() {
 
             const unMesDespues = new Date(fechaInicioInput.value);
             unMesDespues.setMonth(unMesDespues.getMonth() + 1);
-            fechaEsperadaInput.max = unMesDespues.toISOString().split("T")[0];
+            fechaEsperadaInput.max = aValorInput(unMesDespues);
             validarFechasEnVivo();
         });
     }

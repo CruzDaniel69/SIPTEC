@@ -1,3 +1,4 @@
+import { formatearFechaHora } from "../utils/fechas.js";
 import { obtenerPrestamosPagina } from "../services/prestamoService.js";
 import { actualizarDetalleHerramienta } from "../services/detalleHerramientaService.js";
 import { obtenerEstadosHerramienta } from "../services/estadoHerramientaService.js";
@@ -56,7 +57,7 @@ function pintarHistorial(prestamos) {
         <tr>
             <td>${codigoPrestamo(p.id)} — ${p.nombreProducto}</td>
             <td>${p.nombreUsuario || "-"}</td>
-            <td>${p.fechaDevolucion || p.fechaInicio}</td>
+            <td>${formatearFechaHora(p.fechaDevolucion || p.fechaInicio)}</td>
             <td><span class="estado ${p.nombreEstado === "RECHAZADO" ? "daniado" : "activo"}">${p.nombreEstado}</span></td>
         </tr>
     `).join("");

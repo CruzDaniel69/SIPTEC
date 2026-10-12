@@ -1,3 +1,4 @@
+import { formatearFechaHora, estaVencido, ahoraLocalISO } from "../utils/fechas.js";
 import { obtenerPrestamosPagina, actualizarPrestamo } from "../services/prestamoService.js";
 import { obtenerEstadosPrestamo } from "../services/estadoPrestamoService.js";
 import { actualizarDetalleHerramienta } from "../services/detalleHerramientaService.js";
@@ -126,7 +127,7 @@ function pintarTablaPrestamos() {
         <tr data-fila="${fila.id}" style="cursor:pointer;">
             <td class="etiqueta-codigo">${fila.codigo}</td>
             <td>${fila.nombreUsuario}</td>
-            <td>${fila.fechaInicio}</td>
+            <td>${formatearFechaHora(fila.fechaInicio)}</td>
             <td><span class="estado activo">${fila.tipo}</span></td>
             <td>${fila.productoArea}${fila.detalleTexto ? ` <span class="atenuado">(${fila.detalleTexto})</span>` : ""}</td>
             <td><span class="estado ${claseEstadoPrestamo(fila.nombreEstado)}">${fila.nombreEstado}</span></td>
@@ -149,7 +150,7 @@ function pintarDetalle(fila) {
         <span class="field-label">Tipo de solicitud</span>
         <p style="margin:4px 0 12px; font-weight:600;">${fila.tipo} — ${fila.productoArea}${fila.detalleTexto ? ` (${fila.detalleTexto})` : ""}</p>
         <span class="field-label">Fecha esperada de devolución</span>
-        <p style="margin:0 0 16px; font-weight:600;">${fila.fechaEsperada || "-"}</p>
+        <p style="margin:0 0 16px; font-weight:600;">${formatearFechaHora(fila.fechaEsperada)}</p>
         ${puedeGestionar ? `
         <div class="acciones-rapidas">
             <button type="button" class="boton-accion-rapida accion-rapida-verde" id="btnAprobarPrestamo"><i class="bi bi-check-lg"></i> Aprobar préstamo</button>
@@ -213,11 +214,10 @@ function pintarDevoluciones() {
         return;
     }
 
-    const hoy = new Date().toISOString().split("T")[0];
     const puedeRegistrarDevolucion = puedeGestionar(["ADMINISTRADOR", "IT"]);
 
     grid.innerHTML = filas.map((fila) => {
-        const retrasado = fila.fechaEsperada && fila.fechaEsperada < hoy;
+        const retrasado = fila.fechaEsperada && estaVencido(fila.fechaEsperada);
         return `
         <div class="tarjeta-devolucion">
             <div class="top-row">
@@ -272,7 +272,7 @@ async function marcarDevuelto(idPrestamo, idsUnidadesDanadas = []) {
             usuario: fila.idUsuario,
             fechaInicio: fila.fechaInicio,
             fechaEsperada: fila.fechaEsperada,
-            fechaDevolucion: new Date().toISOString().split("T")[0],
+            fechaDevolucion: ahoraLocalISO(),
             estado: estadoDevuelto.id,
         });
 
@@ -314,8 +314,8 @@ function pintarHistorial() {
         <tr>
             <td class="etiqueta-codigo">${fila.codigo}</td>
             <td class="nombre-elemento"><span class="icono-elemento"><i class="bi bi-tools"></i></span>${fila.productoArea}</td>
-            <td>${fila.fechaInicio}</td>
-            <td>${fila.fechaDevolucion || "-"}</td>
+            <td>${formatearFechaHora(fila.fechaInicio)}</td>
+            <td>${formatearFechaHora(fila.fechaDevolucion)}</td>
             <td>${fila.nombreUsuario}</td>
             <td><span class="estado ${claseEstadoPrestamo(fila.nombreEstado)}">${fila.nombreEstado}</span></td>
         </tr>

@@ -1,3 +1,4 @@
+import { formatearFechaHora as formatearFecha } from "../utils/fechas.js";
 import { usuarioActual, idUsuarioActual } from "../utils/sesion.js";
 import { obtenerPrestamosPagina } from "../services/prestamoService.js";
 import { pintarPaginador, TAMANO_PAGINA } from "../utils/paginacion.js";
@@ -5,11 +6,6 @@ import { pintarPaginador, TAMANO_PAGINA } from "../utils/paginacion.js";
 let paginaActivos = 0;
 
 
-function formatearFecha(fechaISO) {
-    if (!fechaISO) return "-";
-    const fecha = new Date(fechaISO + "T00:00:00");
-    return fecha.toLocaleDateString("es-SV");
-}
 
 function claseEstadoPrestamo(nombreEstado) {
     const mapa = { PENDIENTE: "pendiente", APROBADO: "activo", ENTREGADO: "prestado", DEVUELTO: "devuelto", RECHAZADO: "daniado" };

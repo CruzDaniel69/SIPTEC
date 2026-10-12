@@ -1,12 +1,8 @@
+import { formatearFechaHora as formatearFecha } from "../utils/fechas.js";
 import { usuarioActual } from "../utils/sesion.js";
 import { obtenerPrestamosPagina } from "../services/prestamoService.js";
 import { obtenerResumenDashboard } from "../services/dashboardService.js";
 
-function formatearFecha(fechaISO) {
-    if (!fechaISO) return "-";
-    const fecha = new Date(fechaISO + "T00:00:00");
-    return fecha.toLocaleDateString("es-SV");
-}
 
 function mostrarNombreBienvenida() {
     const titulo = document.getElementById("tituloBienvenida");

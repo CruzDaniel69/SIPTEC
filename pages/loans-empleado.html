@@ -47,15 +47,15 @@
 
       <div class="row g-3" style="margin-top: 2px;">
         <div class="col-md-6">
-          <label class="form-label" for="empFechaInicio">Fecha de inicio</label>
-          <input id="empFechaInicio" class="form-control" type="date" required>
+          <label class="form-label" for="empFechaInicio">Inicio (fecha y hora)</label>
+          <input id="empFechaInicio" class="form-control" type="datetime-local" required>
         </div>
         <div class="col-md-6">
-          <label class="form-label" for="empFechaEsperada">Fecha esperada de devolución</label>
-          <input id="empFechaEsperada" class="form-control" type="date" required>
+          <label class="form-label" for="empFechaEsperada">Devolución esperada (fecha y hora)</label>
+          <input id="empFechaEsperada" class="form-control" type="datetime-local" required>
         </div>
         <div class="col-12">
-          <small class="atenuado">La fecha esperada no puede ser mayor a 1 mes desde el inicio.</small>
+          <small class="atenuado">La devolución debe ser posterior al inicio (puede ser el mismo día, con una hora mayor) y no pasar de 1 mes.</small>
         </div>
         <div class="col-12">
           <label class="form-label" for="empObservaciones">Observaciones (opcional)</label>
