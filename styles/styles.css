@@ -1504,6 +1504,12 @@
      --shadow-card: 0 0 0 1px rgba(255, 255, 255, .06), 0 1px 3px rgba(0, 0, 0, .3), 0 8px 20px rgba(0, 0, 0, .35);
  }
 
+ /* En modo oscuro las líneas entre filas usan el tono sutil de --line, no el casi blanco del modo claro */
+ .modo-oscuro .tabla-datos td,
+ .modo-oscuro table td {
+     border-bottom-color: var(--line);
+ }
+
  .modo-oscuro .area-contenido {
      background:
          radial-gradient(ellipse 900px 500px at 8% 0%, rgba(25, 141, 230, .14), transparent 60%),
