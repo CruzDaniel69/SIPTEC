@@ -1523,6 +1523,37 @@
      color: var(--ink);
  }
 
+ /* Campos de formulario fuera de los modales (solicitud de préstamo, configuración…): mismo estilo oscuro que dentro de ellos.
+    color-scheme: dark hace que el icono y el selector de fecha/hora nativos también sean oscuros. */
+ .modo-oscuro .form-control,
+ .modo-oscuro .form-select,
+ .modo-oscuro textarea.form-control {
+     background: #0f1a25;
+     border-color: var(--line);
+     color: var(--ink);
+     color-scheme: dark;
+ }
+
+ .modo-oscuro .form-control::placeholder,
+ .modo-oscuro textarea.form-control::placeholder {
+     color: var(--ink-soft);
+     opacity: 1;
+ }
+
+ .modo-oscuro .form-control:focus,
+ .modo-oscuro .form-select:focus {
+     background: #0f1a25;
+     color: var(--ink);
+     border-color: var(--blue);
+     box-shadow: 0 0 0 3px rgba(25, 141, 230, .15);
+ }
+
+ .modo-oscuro .form-control:disabled,
+ .modo-oscuro .form-control[readonly] {
+     background: #0b141d;
+     color: var(--ink-soft);
+ }
+
  .modo-oscuro {
      --paper: #0d1520;
      --panel: #1a2530;
