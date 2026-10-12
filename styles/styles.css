@@ -260,11 +260,6 @@
      color: var(--ink-soft);
  }
 
- /* Formularios de una sola columna: ancho cómodo de lectura, no de pantalla completa */
- .panel-nuevo-prestamo .panel {
-     max-width: 760px;
- }
-
  :root {
      --navy: #001f3d;
      --navy-soft: #07345f;
