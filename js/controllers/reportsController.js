@@ -5,6 +5,8 @@ import { obtenerEstadosHerramienta } from "../services/estadoHerramientaService.
 import { obtenerPiezasPagina } from "../services/inventarioService.js";
 import { pintarPaginador, TAMANO_PAGINA } from "../utils/paginacion.js";
 import { puedeGestionar } from "../utils/rol.js";
+import { usuarioActual } from "../utils/sesion.js";
+import { descargarPdf } from "../utils/pdf.js";
 
 const cache = { estadosHerramienta: [], danados: [] };
 let paginaHistorial = 0;
@@ -175,13 +177,37 @@ function exportarDanio(idDetalle, formato) {
         const csv = "Equipo,Código,Estado\n" + `"${item.nombre}","${item.detalle.codInv}","DAÑADO"`;
         descargarArchivo(`${base}.csv`, csv, "text/csv");
     } else if (formato === "pdf") {
-        const ventana = window.open("", "_blank");
-        if (ventana) {
-            ventana.document.write(`<pre>${contenido}</pre>`);
-            ventana.document.close();
-            ventana.focus();
-            ventana.print();
-        }
+        const { detalle, nombre } = item;
+        generarPdfSeguro({
+            titulo: "Reporte de daño de equipo",
+            subtitulo: nombre,
+            generadoPor: nombreDeQuienGenera(),
+            resumen: [
+                ["Equipo", nombre],
+                ["Código de inventario", detalle.codInv],
+                ["Marca", detalle.nombreMarca],
+                ["Categoría", detalle.nombreCategoria],
+                ["Área", detalle.nombreArea],
+                ["Estado", "DAÑADO"],
+            ],
+            nota: "El equipo fue reportado con daño y permanece fuera de préstamo hasta que el reporte se marque como resuelto.",
+            firmas: ["Reportado por", "Revisado por"],
+            nombreArchivo: `${base}.pdf`,
+        });
+    }
+}
+
+function nombreDeQuienGenera() {
+    const { nombreUsuario = "", apellidoUsuario = "" } = usuarioActual() || {};
+    return `${nombreUsuario} ${apellidoUsuario}`.trim();
+}
+
+async function generarPdfSeguro(datos) {
+    try {
+        await descargarPdf(datos);
+    } catch (error) {
+        console.error(error);
+        Swal.fire({ icon: "error", title: "No se pudo generar el PDF", text: "Intenta de nuevo en unos segundos." });
     }
 }
 
@@ -281,13 +307,17 @@ function exportarSeleccionados(formato) {
         const filasCsv = items.map(({ detalle, nombre }) => `"${nombre}","${detalle.codInv}","DAÑADO"`).join("\n");
         descargarArchivo("reportes-danios.csv", "Equipo,Código,Estado\n" + filasCsv, "text/csv");
     } else if (formato === "pdf") {
-        const ventana = window.open("", "_blank");
-        if (ventana) {
-            ventana.document.write(`<pre>${contenido}</pre>`);
-            ventana.document.close();
-            ventana.focus();
-            ventana.print();
-        }
+        generarPdfSeguro({
+            titulo: "Reporte de equipos con daño",
+            subtitulo: `${items.length} ${items.length === 1 ? "equipo reportado" : "equipos reportados"} con daño`,
+            generadoPor: nombreDeQuienGenera(),
+            columnas: ["Código", "Equipo", "Marca", "Categoría", "Área", "Estado"],
+            filas: items.map(({ detalle, nombre }) => [
+                detalle.codInv, nombre, detalle.nombreMarca || "-", detalle.nombreCategoria || "-", detalle.nombreArea || "-", "DAÑADO",
+            ]),
+            columnaEstado: 5,
+            nombreArchivo: "reportes-danios.pdf",
+        });
     }
 }
 
