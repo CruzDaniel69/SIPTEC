@@ -1,4 +1,4 @@
-import { formatearFechaHora } from "../utils/fechas.js";
+import { formatearFechaHora, aValorInput } from "../utils/fechas.js";
 import { obtenerPrestamosPagina } from "../services/prestamoService.js";
 import { actualizarDetalleHerramienta } from "../services/detalleHerramientaService.js";
 import { obtenerEstadosHerramienta } from "../services/estadoHerramientaService.js";
@@ -172,7 +172,7 @@ function exportarDanio(idDetalle, formato) {
     if (!item) return;
 
     const contenido = contenidoReporte(item.detalle, item.nombre);
-    const base = `reporte-${item.detalle.codInv}`;
+    const base = `Reporte de daño - ${nombreSeguro(item.nombre)} ${nombreSeguro(item.detalle.codInv)}`;
 
     if (formato === "txt") {
         descargarArchivo(`${base}.txt`, contenido, "text/plain");
@@ -198,6 +198,15 @@ function exportarDanio(idDetalle, formato) {
             nombreArchivo: `${base}.pdf`,
         });
     }
+}
+
+/** Quita los caracteres que Windows no permite en un nombre de archivo y lo acorta. */
+function nombreSeguro(texto) {
+    return String(texto ?? "").replace(/[\\/:*?"<>|]/g, "").replace(/\s+/g, " ").trim().slice(0, 30);
+}
+
+function fechaParaArchivo() {
+    return aValorInput(new Date()).slice(0, 10);
 }
 
 function nombreDeQuienGenera() {
@@ -303,12 +312,13 @@ function exportarSeleccionados(formato) {
 
     const items = Array.from(seleccionados).map((id) => informacionSeleccion.get(id)).filter(Boolean);
     const contenido = items.map(({ detalle, nombre }) => contenidoReporte(detalle, nombre)).join("\n\n---\n\n");
+    const baseVarios = `Reporte de daños - ${items.length} ${items.length === 1 ? "equipo" : "equipos"} - ${fechaParaArchivo()}`;
 
     if (formato === "txt") {
-        descargarArchivo("reportes-danios.txt", contenido, "text/plain");
+        descargarArchivo(`${baseVarios}.txt`, contenido, "text/plain");
     } else if (formato === "csv") {
         const filasCsv = items.map(({ detalle, nombre }) => `"${nombre}","${detalle.codInv}","DAÑADO"`).join("\n");
-        descargarArchivo("reportes-danios.csv", "Equipo,Código,Estado\n" + filasCsv, "text/csv");
+        descargarArchivo(`${baseVarios}.csv`, "Equipo,Código,Estado\n" + filasCsv, "text/csv");
     } else if (formato === "pdf") {
         generarPdfSeguro({
             titulo: "Reporte de equipos con daño",
@@ -320,7 +330,7 @@ function exportarSeleccionados(formato) {
             ]),
             columnaEstado: 5,
             firmas: ["Reportado por", "Revisado por"],
-            nombreArchivo: "reportes-danios.pdf",
+            nombreArchivo: `${baseVarios}.pdf`,
         });
     }
 }
