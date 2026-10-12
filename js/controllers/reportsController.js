@@ -73,6 +73,9 @@ function convertirItemDanado(pieza) {
             idMarca: pieza.idMarca,
             idEstadoHerramienta: pieza.idEstadoHerramienta,
             codInv: pieza.codInv,
+            nombreMarca: pieza.nombreMarca,
+            nombreCategoria: pieza.nombreCategoria,
+            nombreArea: pieza.nombreArea,
         },
         nombre: pieza.nombreHerramienta || "Equipo #" + pieza.idHerramienta,
     };
@@ -185,9 +188,9 @@ function exportarDanio(idDetalle, formato) {
             resumen: [
                 ["Equipo", nombre],
                 ["Código de inventario", detalle.codInv],
-                ["Marca", detalle.nombreMarca],
-                ["Categoría", detalle.nombreCategoria],
-                ["Área", detalle.nombreArea],
+                ["Marca", detalle.nombreMarca || "Sin marca"],
+                ["Categoría", detalle.nombreCategoria || "Sin categoría"],
+                ["Área", detalle.nombreArea || "Sin asignar"],
                 ["Estado", "DAÑADO"],
             ],
             nota: "El equipo fue reportado con daño y permanece fuera de préstamo hasta que el reporte se marque como resuelto.",
@@ -313,9 +316,10 @@ function exportarSeleccionados(formato) {
             generadoPor: nombreDeQuienGenera(),
             columnas: ["Código", "Equipo", "Marca", "Categoría", "Área", "Estado"],
             filas: items.map(({ detalle, nombre }) => [
-                detalle.codInv, nombre, detalle.nombreMarca || "-", detalle.nombreCategoria || "-", detalle.nombreArea || "-", "DAÑADO",
+                detalle.codInv, nombre, detalle.nombreMarca || "Sin marca", detalle.nombreCategoria || "Sin categoría", detalle.nombreArea || "Sin asignar", "DAÑADO",
             ]),
             columnaEstado: 5,
+            firmas: ["Reportado por", "Revisado por"],
             nombreArchivo: "reportes-danios.pdf",
         });
     }

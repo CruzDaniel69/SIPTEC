@@ -103,6 +103,28 @@ function dibujarPies(doc) {
     }
 }
 
+/** Distancia desde el borde inferior de la hoja hasta las líneas de firma (queda sobre el pie de página). */
+const ALTURA_FIRMAS = 52;
+
+/** Una línea de firma por etiqueta, repartidas a lo ancho, con el texto centrado debajo de cada una. */
+function dibujarFirmas(doc, firmas, yFirma) {
+    const ancho = doc.internal.pageSize.getWidth() - MARGEN * 2;
+    const separacion = 12;
+    const anchoFirma = (ancho - separacion * (firmas.length - 1)) / firmas.length;
+
+    doc.setDrawColor(...GRIS_TEXTO);
+    doc.setLineWidth(0.3);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.setTextColor(...GRIS_TEXTO);
+
+    firmas.forEach((etiqueta, i) => {
+        const x = MARGEN + i * (anchoFirma + separacion);
+        doc.line(x, yFirma, x + anchoFirma, yFirma);
+        doc.text(etiqueta, x + anchoFirma / 2, yFirma + 5, { align: "center" });
+    });
+}
+
 /** Bloque gris con pares "etiqueta: valor" en dos columnas. Devuelve la posición vertical donde termina. */
 function dibujarResumen(doc, resumen, y) {
     const ancho = doc.internal.pageSize.getWidth() - MARGEN * 2;
@@ -180,24 +202,6 @@ export async function crearPdf(datos) {
         y += lineas.length * 5 + 6;
     }
 
-    if (datos.firmas && datos.firmas.length > 0) {
-        // Líneas de firma al final del contenido, con la etiqueta debajo de cada una
-        const ancho = doc.internal.pageSize.getWidth() - MARGEN * 2;
-        const separacion = 12;
-        const anchoFirma = (ancho - separacion * (datos.firmas.length - 1)) / datos.firmas.length;
-        const yFirma = y + 34;
-        doc.setDrawColor(...GRIS_TEXTO);
-        doc.setLineWidth(0.3);
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(8.5);
-        doc.setTextColor(...GRIS_TEXTO);
-        datos.firmas.forEach((etiqueta, i) => {
-            const x = MARGEN + i * (anchoFirma + separacion);
-            doc.line(x, yFirma, x + anchoFirma, yFirma);
-            doc.text(etiqueta, x + anchoFirma / 2, yFirma + 5, { align: "center" });
-        });
-    }
-
     if (datos.columnas && datos.filas) {
         doc.autoTable({
             startY: y,
@@ -220,6 +224,18 @@ export async function crearPdf(datos) {
                 if (info.pageNumber > 1) dibujarEncabezado(doc, logo, datos.generadoPor);
             },
         });
+    }
+
+    if (datos.firmas && datos.firmas.length > 0) {
+        // Las firmas van fijas en la parte baja de la última hoja; si la tabla llega hasta ahí, se pasan a una hoja nueva
+        const yFirma = doc.internal.pageSize.getHeight() - ALTURA_FIRMAS;
+        const finContenido = datos.columnas && datos.filas ? doc.lastAutoTable.finalY : y;
+
+        if (finContenido > yFirma - 15) {
+            doc.addPage();
+            dibujarEncabezado(doc, logo, datos.generadoPor);
+        }
+        dibujarFirmas(doc, datos.firmas, yFirma);
     }
 
     dibujarPies(doc);
