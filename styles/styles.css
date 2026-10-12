@@ -48,7 +48,6 @@
      color: #fff;
      background: var(--navy-soft);
      border-color: var(--navy-soft);
-     box-shadow: 0 2px 6px rgba(7, 52, 95, .28);
  }
 
  /* Modo oscuro: tonos azul océano oscuro, a juego con la barra lateral y el fondo */
@@ -66,9 +65,8 @@
 
  .modo-oscuro .paginador-botones button.activa {
      color: #fff;
-     background: #0b5a96;
-     border-color: #2f95e0;
-     box-shadow: 0 2px 10px rgba(25, 141, 230, .35);
+     background: #101820;
+     border-color: #1d4468;
  }
 
  .paginador-botones button:disabled {
@@ -612,22 +610,22 @@
 
  .boton-solido-verde {
      background: linear-gradient(180deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, 0) 55%), rgba(40, 167, 69, .96);
-     box-shadow: 0 1px 2px rgba(0, 0, 0, .08), 0 3px 8px rgba(40, 167, 69, .18);
+     box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
  }
 
  .boton-solido-azul {
      background: linear-gradient(180deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, 0) 55%), rgba(25, 141, 230, .96);
-     box-shadow: 0 1px 2px rgba(0, 0, 0, .08), 0 3px 8px rgba(25, 141, 230, .18);
+     box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
  }
 
  .boton-solido-rojo {
      background: linear-gradient(180deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, 0) 55%), rgba(220, 53, 69, .96);
-     box-shadow: 0 1px 2px rgba(0, 0, 0, .08), 0 3px 8px rgba(220, 53, 69, .18);
+     box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
  }
 
  .boton-solido-morado {
      background: linear-gradient(180deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, 0) 55%), rgba(138, 79, 214, .96);
-     box-shadow: 0 1px 2px rgba(0, 0, 0, .08), 0 3px 8px rgba(138, 79, 214, .18);
+     box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
  }
 
  .boton-solido-gris {
@@ -639,7 +637,7 @@
  .boton-solido-naranja {
      background: linear-gradient(180deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, 0) 55%), rgba(246, 166, 35, .96);
      color: #fff;
-     box-shadow: 0 1px 2px rgba(0, 0, 0, .08), 0 3px 8px rgba(246, 166, 35, .18);
+     box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
  }
 
  .boton-solido-verde:hover,
@@ -710,22 +708,22 @@
 
  .icono-estadistica.icon-blue {
      background: linear-gradient(180deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, 0) 55%), rgba(25, 141, 230, .96);
-     box-shadow: 0 1px 2px rgba(0, 0, 0, .08), 0 3px 8px rgba(25, 141, 230, .18);
+     box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
  }
 
  .icono-estadistica.icon-green {
      background: linear-gradient(180deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, 0) 55%), rgba(40, 167, 69, .96);
-     box-shadow: 0 1px 2px rgba(0, 0, 0, .08), 0 3px 8px rgba(40, 167, 69, .18);
+     box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
  }
 
  .icono-estadistica.icon-orange {
      background: linear-gradient(180deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, 0) 55%), rgba(246, 166, 35, .96);
-     box-shadow: 0 1px 2px rgba(0, 0, 0, .08), 0 3px 8px rgba(246, 166, 35, .18);
+     box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
  }
 
  .icono-estadistica.icon-purple {
      background: linear-gradient(180deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, 0) 55%), rgba(138, 79, 214, .96);
-     box-shadow: 0 1px 2px rgba(0, 0, 0, .08), 0 3px 8px rgba(138, 79, 214, .18);
+     box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
  }
 
  .tarjeta-estadistica strong {
@@ -1668,7 +1666,7 @@
      background: linear-gradient(180deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, 0) 55%), rgba(40, 167, 69, .96);
      border: 1px solid rgba(255, 255, 255, .22);
      backdrop-filter: blur(8px) saturate(140%);
-     box-shadow: 0 1px 2px rgba(0, 0, 0, .08), 0 3px 8px rgba(40, 167, 69, .18);
+     box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
  }
 
  .modal .btn-warning {
@@ -1676,7 +1674,7 @@
      border: 1px solid rgba(255, 255, 255, .22);
      backdrop-filter: blur(8px) saturate(140%);
      color: #fff;
-     box-shadow: 0 1px 2px rgba(0, 0, 0, .08), 0 3px 8px rgba(246, 166, 35, .18);
+     box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
  }
 
  .modal .btn-light {
@@ -1690,7 +1688,7 @@
      background: linear-gradient(180deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, 0) 55%), rgba(25, 141, 230, .96);
      border: 1px solid rgba(255, 255, 255, .22);
      backdrop-filter: blur(8px) saturate(140%);
-     box-shadow: 0 1px 2px rgba(0, 0, 0, .08), 0 3px 8px rgba(25, 141, 230, .18);
+     box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
  }
 
  /* ---------- Responsive ---------- */
