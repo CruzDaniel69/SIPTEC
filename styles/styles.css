@@ -206,9 +206,63 @@
      background: #0f1a25;
  }
 
- input[type="date"].fecha-invalida {
+ input.fecha-invalida {
      color: var(--red);
      border-color: var(--red);
+ }
+
+ /* ---------- Campos con etiqueta flotante (formularios fuera de modales) ----------
+    La etiqueta vive dentro del campo y sube al escribir; los campos de fecha y hora la llevan siempre arriba. */
+ .campo-flotante {
+     position: relative;
+ }
+
+ .campo-flotante .form-control {
+     height: 56px;
+     padding: 24px 14px 8px;
+     border-radius: var(--radius-sm);
+ }
+
+ .campo-flotante textarea.form-control {
+     height: auto;
+     min-height: 96px;
+     padding-top: 28px;
+     resize: vertical;
+ }
+
+ .campo-flotante label {
+     position: absolute;
+     left: 14px;
+     top: 18px;
+     margin: 0;
+     font-size: 14px;
+     color: var(--ink-soft);
+     pointer-events: none;
+     transition: top .12s ease, font-size .12s ease;
+ }
+
+ .campo-flotante .form-control:focus ~ label,
+ .campo-flotante .form-control:not(:placeholder-shown) ~ label,
+ .campo-flotante .form-control[type="datetime-local"] ~ label {
+     top: 8px;
+     font-size: 11px;
+ }
+
+ /* Las piezas disponibles solo aparecen cuando ya se eligió un equipo */
+ .grupo-piezas:has(#empUnidades:empty) {
+     display: none;
+ }
+
+ .grupo-piezas .titulo-campo {
+     display: block;
+     margin-bottom: 8px;
+     font-size: 12px;
+     color: var(--ink-soft);
+ }
+
+ /* Formularios de una sola columna: ancho cómodo de lectura, no de pantalla completa */
+ .panel-nuevo-prestamo .panel {
+     max-width: 760px;
  }
 
  :root {
@@ -328,6 +382,49 @@
      border-radius: var(--radius-sm);
      background: #dcdcdc;
      margin-bottom: 10px;
+ }
+
+ /* Login con etiqueta flotante sobre la tarjeta oscura */
+ .tarjeta-login .campo-flotante {
+     margin-bottom: 12px;
+ }
+
+ .tarjeta-login .campo-flotante label {
+     position: absolute;
+     left: 14px;
+     top: 18px;
+     margin: 0;
+     font-size: 14px;
+     color: #aab7c5;
+ }
+
+ .tarjeta-login .campo-flotante .form-control {
+     height: 56px;
+     padding: 24px 14px 8px;
+     margin-bottom: 0;
+     color: #fff;
+     background: rgba(255, 255, 255, .08);
+     border: 1px solid rgba(255, 255, 255, .14);
+ }
+
+ .tarjeta-login .campo-flotante .form-control:focus {
+     color: #fff;
+     background: rgba(255, 255, 255, .10);
+     border-color: #6BB34D;
+     box-shadow: none;
+ }
+
+ .tarjeta-login .campo-flotante .form-control:focus ~ label,
+ .tarjeta-login .campo-flotante .form-control:not(:placeholder-shown) ~ label,
+ .tarjeta-login .campo-flotante .form-control:-webkit-autofill ~ label {
+     top: 8px;
+     font-size: 11px;
+ }
+
+ /* El autocompletado del navegador pinta el campo de blanco; se mantiene el tono de la tarjeta */
+ .tarjeta-login .campo-flotante .form-control:-webkit-autofill {
+     -webkit-text-fill-color: #fff;
+     box-shadow: 0 0 0 100px #14283c inset;
  }
 
  .boton-iniciar-sesion {
@@ -1439,6 +1536,11 @@
      border: 1px solid var(--line);
      height: 42px;
      margin-bottom: 14px;
+ }
+
+ .caja-configuracion .campo-flotante .form-control {
+     height: 56px;
+     margin-bottom: 0;
  }
 
  /* iOS-style switch */

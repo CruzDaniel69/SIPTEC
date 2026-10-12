@@ -17,7 +17,7 @@ function pintarUnidades(herramienta) {
     if (!contenedor) return;
 
     if (!herramienta) {
-        contenedor.innerHTML = '<small class="atenuado">Primero busca y selecciona una herramienta.</small>';
+        contenedor.innerHTML = "";
         return;
     }
 

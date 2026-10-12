@@ -23,23 +23,25 @@
 
       <div class="empleado-seccion-herramienta row g-3">
         <div class="col-12">
-          <label class="form-label" for="empEquipo">Herramienta a solicitar</label>
-          <input id="empEquipo" class="form-control" list="empEquipoOptions" maxlength="100" placeholder="Busca el equipo" required>
+          <div class="campo-flotante">
+            <input id="empEquipo" class="form-control" list="empEquipoOptions" maxlength="100" placeholder=" " autocomplete="off" required>
+            <label for="empEquipo">Herramienta a solicitar</label>
+          </div>
           <datalist id="empEquipoOptions"></datalist>
           <small id="empEquipoAviso" class="atenuado"></small>
         </div>
-        <div class="col-12">
-          <label class="form-label">Piezas disponibles (marca las que necesitas)</label>
-          <div id="empUnidades" class="d-flex flex-wrap gap-2">
-            <small class="atenuado">Primero busca y selecciona una herramienta.</small>
-          </div>
+        <div class="col-12 grupo-piezas">
+          <span class="titulo-campo">Piezas disponibles</span>
+          <div id="empUnidades" class="d-flex flex-wrap gap-2"></div>
         </div>
       </div>
 
       <div class="empleado-seccion-area row g-3">
         <div class="col-12">
-          <label class="form-label" for="empArea">Área a solicitar</label>
-          <input id="empArea" class="form-control" list="empAreaOptions" maxlength="100" placeholder="Ej. Laboratorio de Cómputo 1" required>
+          <div class="campo-flotante">
+            <input id="empArea" class="form-control" list="empAreaOptions" maxlength="100" placeholder=" " autocomplete="off" required>
+            <label for="empArea">Área a solicitar</label>
+          </div>
           <datalist id="empAreaOptions"></datalist>
           <small id="empAreaAviso" class="atenuado"></small>
         </div>
@@ -47,19 +49,22 @@
 
       <div class="row g-3" style="margin-top: 2px;">
         <div class="col-md-6">
-          <label class="form-label" for="empFechaInicio">Inicio (fecha y hora)</label>
-          <input id="empFechaInicio" class="form-control" type="datetime-local" required>
+          <div class="campo-flotante">
+            <input id="empFechaInicio" class="form-control" type="datetime-local" required>
+            <label for="empFechaInicio">Inicio</label>
+          </div>
         </div>
         <div class="col-md-6">
-          <label class="form-label" for="empFechaEsperada">Devolución esperada (fecha y hora)</label>
-          <input id="empFechaEsperada" class="form-control" type="datetime-local" required>
+          <div class="campo-flotante">
+            <input id="empFechaEsperada" class="form-control" type="datetime-local" required>
+            <label for="empFechaEsperada">Devolución esperada</label>
+          </div>
         </div>
         <div class="col-12">
-          <small class="atenuado">La devolución debe ser posterior al inicio (puede ser el mismo día, con una hora mayor) y no pasar de 1 mes.</small>
-        </div>
-        <div class="col-12">
-          <label class="form-label" for="empObservaciones">Observaciones (opcional)</label>
-          <textarea id="empObservaciones" class="form-control" rows="3" maxlength="150" placeholder="Escribe observaciones..."></textarea>
+          <div class="campo-flotante">
+            <textarea id="empObservaciones" class="form-control" rows="3" maxlength="150" placeholder=" "></textarea>
+            <label for="empObservaciones">Observaciones (opcional)</label>
+          </div>
         </div>
       </div>
 
