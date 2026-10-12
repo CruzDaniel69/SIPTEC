@@ -1290,7 +1290,9 @@
 
  #tabPrestamos:checked~.pestanas-segmentadas label[for="tabPrestamos"],
  #tabDevoluciones:checked~.pestanas-segmentadas label[for="tabDevoluciones"],
- #tabHistorial:checked~.pestanas-segmentadas label[for="tabHistorial"] {
+ #tabHistorial:checked~.pestanas-segmentadas label[for="tabHistorial"],
+ #tabHistorialReportes:checked~.pestanas-segmentadas label[for="tabHistorialReportes"],
+ #tabGenerados:checked~.pestanas-segmentadas label[for="tabGenerados"] {
      background: #fff;
      color: var(--ink);
      box-shadow: 0 1px 2px rgba(16, 24, 40, .08);
@@ -1535,7 +1537,9 @@
 
  .modo-oscuro #tabPrestamos:checked~.pestanas-segmentadas label[for="tabPrestamos"],
  .modo-oscuro #tabDevoluciones:checked~.pestanas-segmentadas label[for="tabDevoluciones"],
- .modo-oscuro #tabHistorial:checked~.pestanas-segmentadas label[for="tabHistorial"] {
+ .modo-oscuro #tabHistorial:checked~.pestanas-segmentadas label[for="tabHistorial"],
+ .modo-oscuro #tabHistorialReportes:checked~.pestanas-segmentadas label[for="tabHistorialReportes"],
+ .modo-oscuro #tabGenerados:checked~.pestanas-segmentadas label[for="tabGenerados"] {
      background: #101820;
      color: #fff;
  }
