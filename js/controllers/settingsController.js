@@ -1,4 +1,5 @@
 import { obtenerUsuarioPorId, actualizarUsuario } from "../services/usuarioService.js";
+import { puedeGestionar } from "../utils/rol.js";
 import { cerrarSesionCompleta } from "../utils/sesion.js";
 
 function idUsuarioActual() {
@@ -66,7 +67,6 @@ function initGuardarPerfil() {
                 nombreUsuario: nombre,
                 apellidoUsuario: apellido,
                 correoUsuario: usuarioActual.correoUsuario,
-                passwordHash: usuarioActual.passwordHash,
                 rol: usuarioActual.rol,
                 institucion: usuarioActual.institucion,
             });
@@ -78,9 +78,23 @@ function initGuardarPerfil() {
     });
 }
 
+// El empleado solo consulta su perfil; editar datos de usuario es cosa de ADMINISTRADOR e IT
+function bloquearEdicionPerfil() {
+    ["settingsFirstName", "settingsLastName"].forEach((id) => {
+        const campo = document.getElementById(id);
+        if (campo) campo.disabled = true;
+    });
+    const btnGuardar = document.getElementById("btnGuardarPerfil");
+    if (btnGuardar) btnGuardar.style.display = "none";
+}
+
 async function renderSettingsView() {
     await cargarPerfil();
-    initGuardarPerfil();
+    if (puedeGestionar(["ADMINISTRADOR", "IT"])) {
+        initGuardarPerfil();
+    } else {
+        bloquearEdicionPerfil();
+    }
     initLogout();
 }
 

@@ -2,7 +2,7 @@ const API_URL = "https://siptec-1744e9407a56.herokuapp.com/api/usuarios";
 
 export async function obtenerUsuarios() {
     try {
-        const response = await fetch(API_URL, { credentials: "include" });
+        const response = await fetch(`${API_URL}?size=50`, { credentials: "include" });
 
         if (!response.ok) {
             throw new Error("Error al obtener los usuarios");
