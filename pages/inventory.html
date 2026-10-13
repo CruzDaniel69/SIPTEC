@@ -30,6 +30,16 @@
             <li><button class="dropdown-item" type="button" data-filter="daniado">Dañado</button></li>
           </ul>
         </div>
+        <div class="dropdown" data-roles="ADMINISTRADOR,IT">
+          <button class="boton-pastilla boton-contorno dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-filetype-csv"></i> CSV
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><button class="dropdown-item" type="button" data-csv="exportar"><i class="bi bi-download"></i> Exportar inventario</button></li>
+            <li><button class="dropdown-item" type="button" data-csv="importar"><i class="bi bi-upload"></i> Importar desde CSV</button></li>
+            <li><button class="dropdown-item" type="button" data-csv="plantilla"><i class="bi bi-file-earmark-text"></i> Descargar plantilla</button></li>
+          </ul>
+        </div>
         <button type="button" class="boton-pastilla boton-solido-verde" data-bs-toggle="modal" data-bs-target="#itemModal" data-roles="ADMINISTRADOR,IT">
           <i class="bi bi-plus-lg"></i> Agregar producto
         </button>

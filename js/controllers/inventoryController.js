@@ -9,6 +9,7 @@ import { obtenerTiposArea, agregarTipoArea } from "../services/tipoAreaService.j
 import { obtenerPiezasPagina, obtenerCodigosExistentes, obtenerPrefijosEnUso, obtenerHerramientasPorArea } from "../services/inventarioService.js";
 import { pintarPaginador, retrasar, TAMANO_PAGINA } from "../utils/paginacion.js";
 import { puedeGestionar } from "../utils/rol.js";
+import { initInventarioCsv } from "./inventarioCsvController.js";
 
 const cache = { filas: [], prefijosEnUso: [], areasConteo: {}, marcas: [], categorias: [], estados: [], areas: [], tiposArea: [] };
 let filtroActual = "todo";
@@ -1133,6 +1134,10 @@ async function renderInventoryView() {
         initAccionesTabla();
         initAccionesTablaAreas();
         initBusquedaAreas();
+        initInventarioCsv(
+            () => ({ q: terminoBusqueda, estado: ESTADO_POR_FILTRO[filtroActual] || "", filtro: filtroActual }),
+            recargarVista,
+        );
     } catch (error) {
         console.error(error);
         tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">No se pudo cargar el inventario. Revisa tu conexión con el servidor.</td></tr>';

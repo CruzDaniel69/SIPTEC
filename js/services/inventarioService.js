@@ -42,3 +42,53 @@ export async function buscarHerramientas(texto, limite = 10) {
 export async function obtenerHerramientasPorArea() {
     return pedir("/areas-conteo", "Error al obtener el conteo por área");
 }
+
+async function descargarArchivo(ruta, nombreArchivo, mensajeError) {
+    const response = await fetch(`${API_URL}${ruta}`, { credentials: "include" });
+
+    if (!response.ok) {
+        throw new Error(mensajeError + " (" + response.status + ")");
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const enlace = document.createElement("a");
+    enlace.href = url;
+    enlace.download = nombreArchivo;
+    document.body.appendChild(enlace);
+    enlace.click();
+    enlace.remove();
+    URL.revokeObjectURL(url);
+}
+
+/** Baja el inventario completo (o el que coincide con la búsqueda y el estado) como archivo CSV. */
+export async function exportarInventarioCsv({ q = "", estado = "", nombreArchivo }) {
+    const parametros = new URLSearchParams({ q, estado });
+    await descargarArchivo(`/exportar?${parametros}`, nombreArchivo, "Error al exportar el inventario");
+}
+
+export async function descargarPlantillaInventarioCsv() {
+    await descargarArchivo("/plantilla", "Plantilla de inventario.csv", "Error al descargar la plantilla");
+}
+
+/**
+ * Envía el contenido del CSV a la API. Con soloValidar = true solo revisa el archivo y devuelve
+ * cuántas filas son correctas y cuáles tienen error, sin guardar nada.
+ */
+export async function importarInventarioCsv(contenido, soloValidar) {
+    const response = await fetch(`${API_URL}/importar?soloValidar=${soloValidar}`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contenido }),
+    });
+
+    const resultado = await response.json().catch(() => null);
+
+    if (!response.ok) {
+        // La API explica el problema del archivo (columnas que faltan, demasiadas filas…)
+        throw new Error((resultado && resultado.message) || "Error al importar el inventario (" + response.status + ")");
+    }
+
+    return resultado.data;
+}

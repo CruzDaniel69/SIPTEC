@@ -1637,6 +1637,23 @@
      opacity: 1;
  }
 
+ /* Menús desplegables (filtros, exportar, CSV) en modo oscuro */
+ .modo-oscuro .dropdown-menu {
+     background: var(--panel);
+     border-color: var(--line);
+     box-shadow: var(--shadow-card);
+ }
+
+ .modo-oscuro .dropdown-item {
+     color: var(--ink);
+ }
+
+ .modo-oscuro .dropdown-item:hover,
+ .modo-oscuro .dropdown-item:focus {
+     background: var(--hover);
+     color: var(--ink);
+ }
+
  .modo-oscuro .form-control:focus,
  .modo-oscuro .form-select:focus {
      background: #0f1a25;
