@@ -99,3 +99,26 @@ export async function eliminarHerramienta(id) {
         throw error;
     }
 }
+
+async function leerRespuesta(response, mensajeError) {
+    const resultado = await response.json().catch(() => null);
+
+    if (!response.ok) {
+        throw new Error((resultado && resultado.message) || mensajeError + " (" + response.status + ")");
+    }
+    return resultado.data;
+}
+
+/** Sube o reemplaza la foto de una herramienta (el archivo viaja como multipart, sin Content-Type manual). */
+export async function subirImagenHerramienta(id, archivo) {
+    const datos = new FormData();
+    datos.append("imagen", archivo);
+
+    const response = await fetch(`${API_URL}/${id}/imagen`, { credentials: "include", method: "POST", body: datos });
+    return leerRespuesta(response, "Error al subir la foto");
+}
+
+export async function quitarImagenHerramienta(id) {
+    const response = await fetch(`${API_URL}/${id}/imagen`, { credentials: "include", method: "DELETE" });
+    return leerRespuesta(response, "Error al quitar la foto");
+}

@@ -147,3 +147,17 @@ export async function obtenerPrestamoActivoPorPieza(idDetalle) {
     const resultado = await response.json();
     return resultado.data;
 }
+
+/** Adjunta (o reemplaza) la foto de evidencia de un préstamo. Solo ADMINISTRADOR e IT. */
+export async function subirEvidenciaPrestamo(id, archivo) {
+    const datos = new FormData();
+    datos.append("imagen", archivo);
+
+    const response = await fetch(`${API_URL}/${id}/evidencia`, { credentials: "include", method: "POST", body: datos });
+    const resultado = await response.json().catch(() => null);
+
+    if (!response.ok) {
+        throw new Error((resultado && resultado.message) || "Error al subir la evidencia (" + response.status + ")");
+    }
+    return resultado.data;
+}

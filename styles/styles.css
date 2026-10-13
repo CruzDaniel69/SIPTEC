@@ -260,6 +260,35 @@
      color: var(--ink-soft);
  }
 
+ /* Fotos de los equipos: miniatura en la tabla y vista previa en el modal de edición */
+ .foto-fila {
+     width: 32px;
+     height: 32px;
+     object-fit: cover;
+     border-radius: 9px;
+     margin-right: 10px;
+     vertical-align: middle;
+     border: 1px solid var(--line);
+ }
+
+ .miniatura-equipo {
+     width: 60px;
+     height: 60px;
+     object-fit: cover;
+     border-radius: 10px;
+     border: 1px solid var(--line);
+     flex-shrink: 0;
+ }
+
+ .miniatura-evidencia {
+     width: 100%;
+     max-width: 240px;
+     max-height: 180px;
+     object-fit: cover;
+     border-radius: 10px;
+     border: 1px solid var(--line);
+ }
+
  :root {
      --navy: #001f3d;
      --navy-soft: #07345f;
@@ -1635,6 +1664,17 @@
  .modo-oscuro textarea.form-control::placeholder {
      color: var(--ink-soft);
      opacity: 1;
+ }
+
+ /* Botón "Seleccionar archivo" de los campos de archivo en modo oscuro */
+ .modo-oscuro .form-control::file-selector-button {
+     background: #22303f;
+     color: var(--ink);
+     border-color: var(--line);
+ }
+
+ .modo-oscuro .form-control:hover:not(:disabled):not([readonly])::file-selector-button {
+     background: #2b3b4d;
  }
 
  /* Menús desplegables (filtros, exportar, CSV) en modo oscuro */

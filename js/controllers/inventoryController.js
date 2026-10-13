@@ -1,4 +1,4 @@
-import { agregarHerramienta, actualizarHerramienta, eliminarHerramienta } from "../services/herramientaService.js";
+import { agregarHerramienta, actualizarHerramienta, eliminarHerramienta, subirImagenHerramienta, quitarImagenHerramienta } from "../services/herramientaService.js";
 import { agregarDetalleHerramienta, actualizarDetalleHerramienta, eliminarDetalleHerramienta } from "../services/detalleHerramientaService.js";
 import { obtenerMarcas, agregarMarca, eliminarMarca } from "../services/marcaService.js";
 import { obtenerCategorias, agregarCategoria, eliminarCategoria } from "../services/categoriaService.js";
@@ -10,6 +10,7 @@ import { obtenerPiezasPagina, obtenerCodigosExistentes, obtenerPrefijosEnUso, ob
 import { pintarPaginador, retrasar, TAMANO_PAGINA } from "../utils/paginacion.js";
 import { puedeGestionar } from "../utils/rol.js";
 import { initInventarioCsv } from "./inventarioCsvController.js";
+import { validarImagen, urlDeImagenSegura, miniatura } from "../utils/imagenes.js";
 
 const cache = { filas: [], prefijosEnUso: [], areasConteo: {}, marcas: [], categorias: [], estados: [], areas: [], tiposArea: [] };
 let filtroActual = "todo";
@@ -70,6 +71,7 @@ function convertirPieza(pieza) {
         nombreCategoria: pieza.nombreCategoria || "Sin categoría",
         idEstadoHerramienta: pieza.idEstadoHerramienta,
         nombreEstado: pieza.nombreEstado || "DESCONOCIDO",
+        imagenUrl: pieza.imagenUrl || "",
     };
 }
 
@@ -100,6 +102,13 @@ async function cargarPaginaSegura(pagina) {
     }
 }
 
+/** Foto del equipo en miniatura; si no tiene, el icono de herramienta de siempre. */
+function iconoOFoto(fila) {
+    const foto = miniatura(fila.imagenUrl);
+    if (foto) return `<img class="foto-fila" src="${foto}" alt="Foto de ${fila.nombre}" loading="lazy">`;
+    return '<span class="icono-elemento"><i class="bi bi-tools"></i></span>';
+}
+
 function pintarTabla() {
     const tbody = document.getElementById("inventoryTableBody");
     if (!tbody) return;
@@ -116,7 +125,7 @@ function pintarTabla() {
     tbody.innerHTML = filas.map((fila) => `
         <tr>
             <td class="etiqueta-codigo">${fila.codInv}</td>
-            <td class="nombre-elemento"><span class="icono-elemento"><i class="bi bi-tools"></i></span>${fila.nombre}</td>
+            <td class="nombre-elemento">${iconoOFoto(fila)}${fila.nombre}</td>
             <td>${fila.nombreMarca}</td>
             <td>${fila.nombreCategoria}</td>
             <td>${fila.nombreArea}</td>
@@ -127,7 +136,8 @@ function pintarTabla() {
                     <button type="button" title="Editar" data-bs-toggle="modal" data-bs-target="#itemEditModal"
                         data-id="${fila.idHerramienta}" data-detalle="${fila.idDetalle}" data-cod="${fila.codInv}"
                         data-nombre="${fila.nombre}" data-stock="${fila.stock}" data-idarea="${fila.idArea}"
-                        data-idmarca="${fila.idMarca}" data-idcategoria="${fila.idCategoria}" data-idestado="${fila.idEstadoHerramienta}">
+                        data-idmarca="${fila.idMarca}" data-idcategoria="${fila.idCategoria}" data-idestado="${fila.idEstadoHerramienta}"
+                        data-imagen="${urlDeImagenSegura(fila.imagenUrl)}">
                         <img src="../img/icons8-pencil-24.png" alt="Editar" class="icono-fila">
                     </button>
                     <button type="button" class="danger" title="Eliminar" data-eliminar="${fila.idHerramienta}" data-detalle-eliminar="${fila.idDetalle}">
@@ -726,6 +736,7 @@ function initModalCrear() {
         poblarSelectConAgregar(selectCategoria, cache.categorias, "nombreCategoria", "", "Agregar nueva categoría");
         poblarSelectConAgregar(selectMarca, cache.marcas, "nombreMarca", "", "Agregar nueva marca");
         poblarSelectConAgregar(selectUbicacion, cache.areas, "nombreArea", "", null);
+        document.getElementById("itemFoto").value = "";
         actualizarVistaPrevia();
     });
 
@@ -737,6 +748,13 @@ function initModalCrear() {
         const idMarca = selectMarca.value;
         const stock = Number(inputPiezas.value);
         const idArea = selectUbicacion.value;
+
+        const foto = document.getElementById("itemFoto").files[0];
+        const problemaFoto = validarImagen(foto);
+        if (problemaFoto) {
+            Swal.fire({ icon: "warning", title: "Foto inválida", text: problemaFoto });
+            return;
+        }
 
         if (!selectPrefijo.value || selectPrefijo.value === "__nuevo__") {
             Swal.fire({ icon: "warning", title: "Código inválido", text: "Selecciona un prefijo para el código." });
@@ -812,8 +830,23 @@ function initModalCrear() {
                 });
             }
 
+            // La foto se sube aparte: si falla, el equipo ya quedó guardado y solo se avisa
+            let fotoFallo = false;
+            if (foto) {
+                try {
+                    await subirImagenHerramienta(nuevaHerramienta.idHerramienta, foto);
+                } catch (error) {
+                    console.error(error);
+                    fotoFallo = true;
+                }
+            }
+
             bootstrap.Modal.getOrCreateInstance(itemModal).hide();
-            Swal.fire({ icon: "success", title: "¡Herramienta guardada!", confirmButtonColor: "#28a745" });
+            if (fotoFallo) {
+                Swal.fire({ icon: "warning", title: "Herramienta guardada", text: "La foto no se pudo subir. Puedes agregarla desde Editar.", confirmButtonColor: "#28a745" });
+            } else {
+                Swal.fire({ icon: "success", title: "¡Herramienta guardada!", confirmButtonColor: "#28a745" });
+            }
             await recargarVista();
         } catch (error) {
             console.error(error);
@@ -831,6 +864,20 @@ function initModalEditar() {
     const selectCategoria = document.getElementById("editItemCategory");
     const selectMarca = document.getElementById("editItemBrand");
     const selectEstado = document.getElementById("editItemStatus");
+
+    // Foto actual del equipo y si el usuario pidió quitarla
+    let fotoGuardada = "";
+    let quitarFoto = false;
+
+    function pintarFotoEdicion() {
+        const imagen = document.getElementById("editItemFotoActual");
+        const botonQuitar = document.getElementById("editItemQuitarFoto");
+        const mostrar = fotoGuardada && !quitarFoto;
+
+        imagen.classList.toggle("d-none", !mostrar);
+        botonQuitar.classList.toggle("d-none", !mostrar);
+        if (mostrar) imagen.src = miniatura(fotoGuardada, 120);
+    }
 
     conectarSelectConAgregar(selectUbicacion, configUbicacion());
     conectarSelectConAgregar(selectCategoria, configCategoria());
@@ -925,11 +972,30 @@ function initModalEditar() {
             }
         }
         refrescarSelect(estadoSelect);
+
+        document.getElementById("editItemFoto").value = "";
+        fotoGuardada = urlDeImagenSegura(boton.dataset.imagen);
+        quitarFoto = false;
+        pintarFotoEdicion();
+
         actualizarVistaPrevia();
+    });
+
+    document.getElementById("editItemQuitarFoto").addEventListener("click", () => {
+        quitarFoto = true;
+        document.getElementById("editItemFoto").value = "";
+        pintarFotoEdicion();
     });
 
     form.addEventListener("submit", async (evento) => {
         evento.preventDefault();
+
+        const fotoNueva = document.getElementById("editItemFoto").files[0];
+        const problemaFoto = validarImagen(fotoNueva);
+        if (problemaFoto) {
+            Swal.fire({ icon: "warning", title: "Foto inválida", text: problemaFoto });
+            return;
+        }
 
         const idHerramienta = Number(document.getElementById("editItemId").value);
         const idDetalleEditado = Number(document.getElementById("editItemDetalleId").value);
@@ -1011,8 +1077,22 @@ function initModalEditar() {
                 }
             }
 
+            // La foto se guarda aparte de los datos: si falla, los cambios ya quedaron y solo se avisa
+            let fotoFallo = false;
+            try {
+                if (fotoNueva) await subirImagenHerramienta(idHerramienta, fotoNueva);
+                else if (quitarFoto && fotoGuardada) await quitarImagenHerramienta(idHerramienta);
+            } catch (error) {
+                console.error(error);
+                fotoFallo = true;
+            }
+
             bootstrap.Modal.getOrCreateInstance(editModal).hide();
-            Swal.fire({ icon: "success", title: "¡Cambios guardados!", confirmButtonColor: "#28a745" });
+            if (fotoFallo) {
+                Swal.fire({ icon: "warning", title: "Cambios guardados", text: "La foto no se pudo actualizar. Intenta de nuevo desde Editar.", confirmButtonColor: "#28a745" });
+            } else {
+                Swal.fire({ icon: "success", title: "¡Cambios guardados!", confirmButtonColor: "#28a745" });
+            }
             await recargarVista();
         } catch (error) {
             console.error(error);

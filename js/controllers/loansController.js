@@ -1,10 +1,11 @@
 import { formatearFechaHora, estaVencido, ahoraLocalISO } from "../utils/fechas.js";
-import { obtenerPrestamosPagina, actualizarPrestamo } from "../services/prestamoService.js";
+import { obtenerPrestamosPagina, actualizarPrestamo, subirEvidenciaPrestamo } from "../services/prestamoService.js";
 import { obtenerEstadosPrestamo } from "../services/estadoPrestamoService.js";
 import { actualizarDetalleHerramienta } from "../services/detalleHerramientaService.js";
 import { obtenerEstadosHerramienta } from "../services/estadoHerramientaService.js";
 import { pintarPaginador, TAMANO_PAGINA } from "../utils/paginacion.js";
 import { puedeGestionar } from "../utils/rol.js";
+import { validarImagen, urlDeImagenSegura, miniatura } from "../utils/imagenes.js";
 
 const cache = { estados: [], estadosHerramienta: [] };
 
@@ -54,6 +55,7 @@ function construirFila(dto) {
         fechaInicio: dto.fechaInicio,
         fechaEsperada: dto.fechaEsperada,
         fechaDevolucion: dto.fechaDevolucion,
+        evidenciaUrl: dto.evidenciaUrl || "",
         tipo: dto.tipo,
         productoArea: dto.nombreProducto,
         cantidad: dto.cantidad,
@@ -136,6 +138,18 @@ function pintarTablaPrestamos() {
     `).join("");
 }
 
+/** Foto de evidencia del préstamo (si tiene), con enlace para verla en grande. */
+function bloqueEvidencia(fila) {
+    const evidencia = urlDeImagenSegura(fila.evidenciaUrl);
+    if (!evidencia) return "";
+
+    return `
+        <span class="field-label">Evidencia</span>
+        <a href="${evidencia}" target="_blank" rel="noopener" style="display:block; margin:4px 0 16px;">
+            <img src="${miniatura(evidencia, 240)}" alt="Evidencia del préstamo ${fila.codigo}" class="miniatura-evidencia" loading="lazy">
+        </a>`;
+}
+
 function pintarDetalle(fila) {
     const panel = document.getElementById("loanDetailPanel");
     if (!panel) return;
@@ -151,6 +165,7 @@ function pintarDetalle(fila) {
         <p style="margin:4px 0 12px; font-weight:600;">${fila.tipo} — ${fila.productoArea}${fila.detalleTexto ? ` (${fila.detalleTexto})` : ""}</p>
         <span class="field-label">Fecha esperada de devolución</span>
         <p style="margin:0 0 16px; font-weight:600;">${formatearFechaHora(fila.fechaEsperada)}</p>
+        ${bloqueEvidencia(fila)}
         ${puedeGestionar ? `
         <div class="acciones-rapidas">
             <button type="button" class="boton-accion-rapida accion-rapida-verde" id="btnAprobarPrestamo"><i class="bi bi-check-lg"></i> Aprobar préstamo</button>
@@ -256,7 +271,10 @@ async function marcarDevuelto(idPrestamo, idsUnidadesDanadas = []) {
     const confirmacion = await Swal.fire({
         icon: "question",
         title: "¿Confirmar devolución?",
-        text: "Vas a registrar esta devolución. ¿Deseas continuar?",
+        text: "Vas a registrar esta devolución. Si quieres, adjunta una foto del estado del equipo como evidencia.",
+        input: "file",
+        inputAttributes: { accept: "image/jpeg,image/png,image/webp", "aria-label": "Foto de evidencia (opcional)" },
+        inputValidator: (archivo) => validarImagen(archivo) || undefined,
         showCancelButton: true,
         confirmButtonText: "Sí, registrar",
         cancelButtonText: "Cancelar",
@@ -266,6 +284,7 @@ async function marcarDevuelto(idPrestamo, idsUnidadesDanadas = []) {
     if (!confirmacion.isConfirmed) {
         return;
     }
+    const fotoEvidencia = confirmacion.value || null;
 
     try {
         await actualizarPrestamo(idPrestamo, {
@@ -291,7 +310,22 @@ async function marcarDevuelto(idPrestamo, idsUnidadesDanadas = []) {
             }
         }
 
-        Swal.fire({ icon: "success", title: "¡Devolución registrada!", confirmButtonColor: "#28a745" });
+        // La evidencia se sube aparte: si falla, la devolución ya quedó registrada y solo se avisa
+        let evidenciaFallo = false;
+        if (fotoEvidencia) {
+            try {
+                await subirEvidenciaPrestamo(idPrestamo, fotoEvidencia);
+            } catch (error) {
+                console.error(error);
+                evidenciaFallo = true;
+            }
+        }
+
+        if (evidenciaFallo) {
+            Swal.fire({ icon: "warning", title: "Devolución registrada", text: "La foto de evidencia no se pudo subir.", confirmButtonColor: "#28a745" });
+        } else {
+            Swal.fire({ icon: "success", title: "¡Devolución registrada!", confirmButtonColor: "#28a745" });
+        }
         await recargarVista();
     } catch (error) {
         console.error(error);

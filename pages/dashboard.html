@@ -98,6 +98,11 @@
               <option value="" disabled selected>Selecciona una opción</option>
             </select>
           </div>
+          <div class="col-12">
+            <label class="form-label" for="itemFoto">Foto (opcional)</label>
+            <input id="itemFoto" class="form-control" type="file" accept="image/jpeg,image/png,image/webp">
+            <small class="atenuado">JPG, PNG o WEBP, máximo 5 MB.</small>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
@@ -162,6 +167,14 @@
             <select id="editItemLocation" class="form-select" required>
               <option value="" disabled selected>Selecciona una opción</option>
             </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="editItemFoto">Foto del equipo</label>
+            <div class="d-flex align-items-center gap-3">
+              <img id="editItemFotoActual" class="miniatura-equipo d-none" alt="Foto actual del equipo">
+              <input id="editItemFoto" class="form-control" type="file" accept="image/jpeg,image/png,image/webp">
+            </div>
+            <button type="button" id="editItemQuitarFoto" class="btn btn-link text-danger p-0 mt-1 d-none">Quitar foto</button>
           </div>
         </div>
         <div class="modal-footer">
