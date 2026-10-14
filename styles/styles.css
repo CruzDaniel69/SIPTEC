@@ -2123,3 +2123,25 @@
     .esqueleto,
     .tarjeta-estadistica strong:empty { animation: none; }
 }
+
+/* En pantallas angostas la tabla de préstamos oculta Usuario, Fecha y Tipo para que Estado y el botón "Ver" queden a la vista */
+@media (max-width: 640px) {
+    table:has(#loansTableBody) :is(th, td):nth-child(2),
+    table:has(#loansTableBody) :is(th, td):nth-child(3),
+    table:has(#loansTableBody) :is(th, td):nth-child(4) {
+        display: none;
+    }
+}
+
+@media (max-width: 640px) {
+    .tarjeta-tabla table:has(#loansTableBody) {
+        min-width: 0;
+    }
+}
+
+@media (max-width: 640px) {
+    .tarjeta-tabla table:has(#loansTableBody) :is(th, td) {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+}
