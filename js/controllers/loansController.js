@@ -46,6 +46,9 @@ function construirFila(dto) {
         detalleTexto = dto.piezasAsignadas && piezas.length > 0
             ? piezas.map((p) => p.codInv).join(", ")
             : "x" + dto.cantidad;
+    } else if (dto.tipo === "Área" && piezas.length > 0) {
+        // Área prestada con herramientas incluidas
+        detalleTexto = "+ " + piezas.map((p) => p.codInv).join(", ");
     }
 
     return {

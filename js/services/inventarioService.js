@@ -20,6 +20,11 @@ export async function obtenerPiezaPorCodigo(codigo) {
     return pedir(`/piezas/codigo/${encodeURIComponent(codigo)}`, "Error al buscar el equipo");
 }
 
+/** Piezas libres de todas las herramientas ubicadas en un área. */
+export async function obtenerPiezasDisponiblesDeArea(idArea) {
+    return pedir(`/disponibles-area/${idArea}`, "Error al obtener las piezas del área");
+}
+
 export async function obtenerPiezasDisponibles(idHerramienta) {
     return pedir(`/disponibles/${idHerramienta}`, "Error al obtener las piezas disponibles");
 }

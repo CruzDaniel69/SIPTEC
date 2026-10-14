@@ -8,6 +8,7 @@ import { agregarDetallePrestamoArea } from "../services/detallePrestamoAreaServi
 import { buscarHerramientas, obtenerPiezasDisponibles } from "../services/inventarioService.js";
 import { pintarPaginador, retrasar, TAMANO_PAGINA } from "../utils/paginacion.js";
 import { mostrarAvisosRechazo } from "../utils/avisos.js";
+import { preguntarHerramientasDelArea } from "../utils/areaConHerramientas.js";
 
 const cache = { areas: [], estados: [], sugerencias: [], unidades: [], herramientaElegida: null };
 let paginaMisPrestamos = 0;
@@ -220,6 +221,19 @@ async function enviarSolicitud() {
         return;
     }
 
+    // Un área puede llevarse con las herramientas que hay en ella
+    let piezasDelArea = [];
+    if (!tipoHerramienta) {
+        try {
+            piezasDelArea = await preguntarHerramientasDelArea(area.id);
+        } catch (error) {
+            console.error(error);
+            Swal.fire({ icon: "error", title: "No se pudo consultar el área", text: "Revisa tu conexión con el servidor." });
+            return;
+        }
+        if (piezasDelArea === null) return;
+    }
+
     try {
         const nuevoPrestamo = await agregarPrestamo({
             usuario: idUsuarioActual(),
@@ -244,6 +258,14 @@ async function enviarSolicitud() {
                 prestamoIdPrestamo: nuevoPrestamo.id,
                 areasIdArea: area.id,
             });
+            for (const pieza of piezasDelArea) {
+                await agregarDetallePrestamoHerramienta({
+                    prestamo: nuevoPrestamo.id,
+                    herramienta: pieza.idHerramienta,
+                    detalleHerramienta: pieza.idDetalle,
+                    cantidad: 1,
+                });
+            }
         }
 
         Swal.fire({ icon: "success", title: "¡Préstamo enviado!", text: "Un administrador va a revisar tu solicitud.", confirmButtonColor: "#28a745" });
