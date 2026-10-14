@@ -30,7 +30,7 @@
             </tr>
           </thead>
           <tbody id="loansTableBody">
-            <tr><td colspan="7" class="text-center atenuado">Cargando préstamos...</td></tr>
+            <tr class="fila-esqueleto" aria-label="Cargando"><td colspan="7"><div class="esqueleto-bloque"><span class="esqueleto"></span><span class="esqueleto"></span><span class="esqueleto"></span><span class="esqueleto corto"></span></div></td></tr>
           </tbody>
         </table>
       </div>
@@ -45,7 +45,7 @@
 
   <div class="panel-pestana panel-devoluciones">
     <div class="cuadricula-devoluciones" id="devolucionesGrid">
-      <p class="atenuado">Cargando devoluciones pendientes...</p>
+      <div class="esqueleto-bloque" aria-label="Cargando"><span class="esqueleto alto"></span><span class="esqueleto alto"></span><span class="esqueleto alto"></span></div>
     </div>
     <div id="devolucionesPaginador" class="paginador"></div>
   </div>
@@ -64,7 +64,7 @@
           </tr>
         </thead>
         <tbody id="historialTableBody">
-          <tr><td colspan="6" class="text-center atenuado">Cargando historial...</td></tr>
+          <tr class="fila-esqueleto" aria-label="Cargando"><td colspan="6"><div class="esqueleto-bloque"><span class="esqueleto"></span><span class="esqueleto"></span><span class="esqueleto"></span><span class="esqueleto corto"></span></div></td></tr>
         </tbody>
       </table>
     </div>

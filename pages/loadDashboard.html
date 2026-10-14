@@ -6,7 +6,7 @@
     <div class="icono-estadistica icon-blue"><i class="bi bi-box-seam"></i></div>
     <div>
       <span>Total de implementos</span>
-      <strong id="statTotalImplementos">-</strong>
+      <strong id="statTotalImplementos"></strong>
       <button type="button" class="enlace-estadistica" data-view="inventory">Ver más</button>
     </div>
   </div>
@@ -15,7 +15,7 @@
     <div class="icono-estadistica icon-green"><i class="bi bi-arrow-repeat"></i></div>
     <div>
       <span>Préstamos activos</span>
-      <strong id="statPrestamosActivos">-</strong>
+      <strong id="statPrestamosActivos"></strong>
       <button type="button" class="enlace-estadistica" data-view="loans">Ver más</button>
     </div>
   </div>
@@ -24,7 +24,7 @@
     <div class="icono-estadistica icon-orange"><i class="bi bi-clock-history"></i></div>
     <div>
       <span>Devoluciones pendientes</span>
-      <strong id="statDevolucionesPendientes">-</strong>
+      <strong id="statDevolucionesPendientes"></strong>
       <button type="button" class="enlace-estadistica" data-view="loans" data-subtab="tabDevoluciones">Ver más</button>
     </div>
   </div>
@@ -33,7 +33,7 @@
     <div class="icono-estadistica icon-purple"><i class="bi bi-check-lg"></i></div>
     <div>
       <span>Disponibles</span>
-      <strong id="statDisponibles">-</strong>
+      <strong id="statDisponibles"></strong>
       <button type="button" class="enlace-estadistica" data-view="inventory">Ver más</button>
     </div>
   </div>
@@ -76,7 +76,7 @@
         </tr>
       </thead>
       <tbody id="actividadRecienteBody">
-        <tr><td colspan="5" class="text-center atenuado">Cargando actividad reciente...</td></tr>
+        <tr class="fila-esqueleto" aria-label="Cargando"><td colspan="5"><div class="esqueleto-bloque"><span class="esqueleto"></span><span class="esqueleto"></span><span class="esqueleto"></span><span class="esqueleto corto"></span></div></td></tr>
       </tbody>
     </table>
   </div>

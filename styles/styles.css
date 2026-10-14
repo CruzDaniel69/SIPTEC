@@ -2081,3 +2081,45 @@
          font-size: 9px;
      }
  }
+/* =====================================================================
+   Marcadores de carga: formas grises que laten suavemente mientras llegan los datos
+   ===================================================================== */
+@keyframes esqueleto-latido {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .45; }
+}
+
+.esqueleto {
+    display: block;
+    height: 14px;
+    border-radius: 8px;
+    background: rgba(128, 140, 155, .24);
+    animation: esqueleto-latido 1.4s ease-in-out infinite;
+}
+
+.esqueleto.corto { width: 55%; }
+.esqueleto.alto { height: 92px; border-radius: 14px; }
+
+.esqueleto-bloque {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 10px 0;
+}
+
+.fila-esqueleto:hover { background: transparent; }
+
+/* Número de una tarjeta de estadística que todavía no llega */
+.tarjeta-estadistica strong:empty {
+    display: block;
+    width: 56px;
+    height: 28px;
+    border-radius: 8px;
+    background: rgba(128, 140, 155, .24);
+    animation: esqueleto-latido 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .esqueleto,
+    .tarjeta-estadistica strong:empty { animation: none; }
+}

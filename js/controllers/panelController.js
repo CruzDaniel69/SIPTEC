@@ -118,6 +118,8 @@ async function renderPanelView() {
     } catch (error) {
         console.error(error);
         Swal.fire({ icon: "error", title: "No se pudo cargar el panel", text: "Revisa tu conexión con el servidor." });
+        // Los números que no llegaron dejan de ser marcador de carga
+        document.querySelectorAll(".tarjeta-estadistica strong:empty").forEach((numero) => { numero.textContent = "-"; });
     }
 }
 
