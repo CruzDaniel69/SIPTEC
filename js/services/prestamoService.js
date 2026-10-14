@@ -161,3 +161,21 @@ export async function subirEvidenciaPrestamo(id, archivo) {
     }
     return resultado.data;
 }
+
+/** Préstamos rechazados del usuario en sesión de los que todavía no se le ha avisado. */
+export async function obtenerRechazosPendientes() {
+    const response = await fetch(`${API_URL}/rechazos-pendientes`, { credentials: "include" });
+    if (!response.ok) {
+        throw new Error("Error al consultar los avisos de rechazo: " + response.status);
+    }
+    const resultado = await response.json();
+    return resultado.data || [];
+}
+
+/** El usuario ya vio el aviso de rechazo: no se le vuelve a mostrar. */
+export async function marcarRechazosAvisados() {
+    const response = await fetch(`${API_URL}/rechazos-pendientes/avisados`, { credentials: "include", method: "POST" });
+    if (!response.ok) {
+        throw new Error("Error al marcar los avisos como vistos: " + response.status);
+    }
+}

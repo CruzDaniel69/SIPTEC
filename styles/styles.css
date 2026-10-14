@@ -1287,6 +1287,10 @@
      gap: 16px;
  }
 
+ .columna-lista {
+     min-width: 0;
+ }
+
  .panel-acciones {
      padding: 20px;
  }

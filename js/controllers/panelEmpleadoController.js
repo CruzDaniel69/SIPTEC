@@ -2,6 +2,7 @@ import { formatearFechaHora as formatearFecha } from "../utils/fechas.js";
 import { usuarioActual, idUsuarioActual } from "../utils/sesion.js";
 import { obtenerPrestamosPagina } from "../services/prestamoService.js";
 import { pintarPaginador, TAMANO_PAGINA } from "../utils/paginacion.js";
+import { mostrarAvisosRechazo } from "../utils/avisos.js";
 
 let paginaActivos = 0;
 
@@ -87,6 +88,7 @@ async function renderPanelEmpleadoView() {
     const statActivos = document.getElementById("statMisPrestamosActivos");
     if (!statActivos) return;
 
+    mostrarAvisosRechazo();
     mostrarNombreBienvenida();
     paginaActivos = 0;
 

@@ -6,6 +6,7 @@ import { obtenerEstadosHerramienta } from "../services/estadoHerramientaService.
 import { pintarPaginador, TAMANO_PAGINA } from "../utils/paginacion.js";
 import { puedeGestionar } from "../utils/rol.js";
 import { validarImagen, urlDeImagenSegura, miniatura } from "../utils/imagenes.js";
+import { escaparHtml } from "../utils/texto.js";
 
 const cache = { estados: [], estadosHerramienta: [] };
 
@@ -56,6 +57,9 @@ function construirFila(dto) {
         fechaEsperada: dto.fechaEsperada,
         fechaDevolucion: dto.fechaDevolucion,
         evidenciaUrl: dto.evidenciaUrl || "",
+        observaciones: dto.observaciones || "",
+        observacionDevolucion: dto.observacionDevolucion || "",
+        motivoRechazo: dto.motivoRechazo || "",
         tipo: dto.tipo,
         productoArea: dto.nombreProducto,
         cantidad: dto.cantidad,
@@ -138,6 +142,21 @@ function pintarTablaPrestamos() {
     `).join("");
 }
 
+/** Notas del préstamo: lo que escribió el solicitante, el motivo del rechazo y la nota de la devolución. */
+function bloqueNotas(fila) {
+    const notas = [
+        ["Observaciones del solicitante", fila.observaciones],
+        ["Motivo del rechazo", fila.motivoRechazo],
+        ["Observaciones de la devolución", fila.observacionDevolucion],
+    ];
+    return notas
+        .filter(([, texto]) => texto)
+        .map(([titulo, texto]) => `
+        <span class="field-label">${titulo}</span>
+        <p style="margin:4px 0 16px; overflow-wrap:anywhere;">${escaparHtml(texto)}</p>`)
+        .join("");
+}
+
 /** Foto de evidencia del préstamo (si tiene), con enlace para verla en grande. */
 function bloqueEvidencia(fila) {
     const evidencia = urlDeImagenSegura(fila.evidenciaUrl);
@@ -165,6 +184,7 @@ function pintarDetalle(fila) {
         <p style="margin:4px 0 12px; font-weight:600;">${fila.tipo} — ${fila.productoArea}${fila.detalleTexto ? ` (${fila.detalleTexto})` : ""}</p>
         <span class="field-label">Fecha esperada de devolución</span>
         <p style="margin:0 0 16px; font-weight:600;">${formatearFechaHora(fila.fechaEsperada)}</p>
+        ${bloqueNotas(fila)}
         ${bloqueEvidencia(fila)}
         ${puedeGestionar ? `
         <div class="acciones-rapidas">
@@ -187,6 +207,24 @@ async function cambiarEstadoPrestamo(fila, nombreEstado) {
         return;
     }
 
+    // Al rechazar se puede dejar un motivo: el solicitante lo verá en su aviso
+    let motivoRechazo;
+    if (nombreEstado === "RECHAZADO") {
+        const respuesta = await Swal.fire({
+            title: "Rechazar préstamo",
+            text: "Puedes explicarle al solicitante por qué (opcional).",
+            input: "textarea",
+            inputPlaceholder: "Motivo del rechazo",
+            inputAttributes: { maxlength: 150 },
+            showCancelButton: true,
+            confirmButtonText: "Rechazar",
+            cancelButtonText: "Cancelar",
+            confirmButtonColor: "#dc3545",
+        });
+        if (!respuesta.isConfirmed) return;
+        motivoRechazo = (respuesta.value || "").trim();
+    }
+
     try {
         await actualizarPrestamo(fila.id, {
             usuario: fila.idUsuario,
@@ -194,6 +232,7 @@ async function cambiarEstadoPrestamo(fila, nombreEstado) {
             fechaEsperada: fila.fechaEsperada,
             fechaDevolucion: fila.fechaDevolucion,
             estado: estado.id,
+            ...(motivoRechazo !== undefined ? { motivoRechazo } : {}),
         });
 
         if (nombreEstado === "APROBADO") {
@@ -253,7 +292,7 @@ function pintarDevoluciones() {
     }).join("");
 }
 
-async function marcarDevuelto(idPrestamo, idsUnidadesDanadas = []) {
+async function marcarDevuelto(idPrestamo, idsUnidadesDanadas = [], observacionDevolucion = "") {
     if (!puedeGestionar(["ADMINISTRADOR", "IT"])) {
         Swal.fire({ icon: "warning", title: "Acción no permitida", text: "Tu rol no tiene permiso para registrar devoluciones." });
         return;
@@ -293,6 +332,7 @@ async function marcarDevuelto(idPrestamo, idsUnidadesDanadas = []) {
             fechaEsperada: fila.fechaEsperada,
             fechaDevolucion: ahoraLocalISO(),
             estado: estadoDevuelto.id,
+            ...(observacionDevolucion ? { observacionDevolucion } : {}),
         });
 
         const idDisponible = (cache.estadosHerramienta.find((e) => e.nombreEstadoHerramienta === "DISPONIBLE") || {}).id;
@@ -397,7 +437,7 @@ function initModalDamage() {
         }
 
         bootstrap.Modal.getOrCreateInstance(modal).hide();
-        await marcarDevuelto(idPrestamo, idsDanadas);
+        await marcarDevuelto(idPrestamo, idsDanadas, descripcion);
     });
 }
 

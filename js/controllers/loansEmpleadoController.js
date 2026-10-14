@@ -7,6 +7,7 @@ import { agregarDetallePrestamoHerramienta } from "../services/detallePrestamoHe
 import { agregarDetallePrestamoArea } from "../services/detallePrestamoAreaService.js";
 import { buscarHerramientas, obtenerPiezasDisponibles } from "../services/inventarioService.js";
 import { pintarPaginador, retrasar, TAMANO_PAGINA } from "../utils/paginacion.js";
+import { mostrarAvisosRechazo } from "../utils/avisos.js";
 
 const cache = { areas: [], estados: [], sugerencias: [], unidades: [], herramientaElegida: null };
 let paginaMisPrestamos = 0;
@@ -226,6 +227,7 @@ async function enviarSolicitud() {
             fechaEsperada,
             fechaDevolucion: null,
             estado: estadoPendiente.id,
+            observaciones: document.getElementById("empObservaciones").value.trim(),
         });
 
         if (tipoHerramienta) {
@@ -329,6 +331,7 @@ async function renderLoansEmpleadoView() {
     const tbody = document.getElementById("misPrestamosTableBody");
     if (!tbody) return;
 
+    mostrarAvisosRechazo();
     listenersListos = false;
     paginaMisPrestamos = 0;
     cache.sugerencias = [];
