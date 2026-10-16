@@ -2,6 +2,7 @@ import { obtenerUsuariosPagina, agregarUsuario, actualizarUsuario, eliminarUsuar
 import { obtenerRoles } from "../services/rolService.js";
 import { obtenerInstituciones } from "../services/institucionService.js";
 import { pintarPaginador, retrasar, TAMANO_PAGINA } from "../utils/paginacion.js";
+import { idUsuarioActual } from "../utils/sesion.js";
 
 const cache = { usuarios: [], roles: [], instituciones: [] };
 let terminoBusqueda = "";
@@ -70,9 +71,10 @@ function pintarTabla() {
                         data-correo="${usuario.correoUsuario}" data-rol="${usuario.rol}" data-institucion="${usuario.institucion}">
                         <img src="../img/icons8-pencil-24.png" alt="Editar" class="icono-fila">
                     </button>
+                    ${usuario.id === idUsuarioActual() ? "" : `
                     <button type="button" class="danger" title="Eliminar" data-eliminar="${usuario.id}">
                         <img src="../img/icons8-trash-24.png" alt="Eliminar" class="icono-fila">
-                    </button>
+                    </button>`}
                 </div>
             </td>
         </tr>`;
@@ -239,7 +241,7 @@ function initAccionesTabla() {
             await recargarVista();
         } catch (error) {
             console.error(error);
-            Swal.fire({ icon: "error", title: "No se pudo eliminar", text: "Ocurrió un error al conectar con el servidor.", confirmButtonColor: "#dc3545" });
+            Swal.fire({ icon: "error", title: "No se pudo eliminar", text: error.message || "Ocurrió un error al conectar con el servidor.", confirmButtonColor: "#dc3545" });
         }
     });
 }

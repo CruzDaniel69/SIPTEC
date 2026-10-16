@@ -89,7 +89,9 @@ export async function eliminarUsuario(id) {
         });
 
         if (!response.ok) {
-            throw new Error("Error al eliminar el registro: " + response.status);
+            // La API explica el motivo (por ejemplo "No puedes eliminar tu propia cuenta"): se muestra tal cual
+            const resultado = await response.json().catch(() => null);
+            throw new Error((resultado && resultado.message) || "Error al eliminar el registro: " + response.status);
         }
         return true;
     }
